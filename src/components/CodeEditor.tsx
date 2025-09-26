@@ -1,6 +1,7 @@
 import React from 'react'
 import Editor from '@monaco-editor/react'
 import { formatSaveTime } from '../utils/dateFormat'
+import { getCodeEditorTypes } from '../utils/typeExtractor'
 
 interface CodeEditorProps {
   code: string
@@ -116,6 +117,11 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
             lineNumbers: 'on',
             renderLineHighlight: 'all',
             selectOnLineNumbers: true,
+            // Add padding to top and bottom
+            padding: {
+              top: 16,
+              bottom: 16
+            },
             // TypeScript specific options
             quickSuggestions: true,
             suggestOnTriggerCharacters: true,
@@ -169,52 +175,8 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
               'ts:lib/es2020.d.ts'
             );
 
-            // Add extra type definitions for better IntelliSense
-            const extraLibs = `
-          // Bar interface - represents a single price bar/candle
-          declare interface Bar {
-            timestamp: string;
-            open: number;
-            high: number;
-            low: number;
-            close: number;
-            volume: number;
-          }
-
-          // Portfolio state at any point in time
-          declare interface PortfolioData {
-            sharesOwned: number;
-            availableCash: number;
-            startingCash: number;
-            portfolioValue: number;
-            portfolioPercentChange: number;
-            buyAndHoldPercentChange: number;
-          }
-
-          // Data provided to strategy function on each execution
-          declare interface StrategyFunctionData {
-            // Zero-based index of the current step
-            stepIndex: number;
-            bars: Bar[];
-            currentBar: Bar;
-            previousBar: Bar;
-            nextBar: Bar;
-            currentPortfolio: PortfolioData;
-            strategyResults: StrategyFunctionResult[];
-            previousStrategyResult?: StrategyFunctionResult;
-          }
-
-          // Result returned by strategy function
-          declare interface StrategyFunctionResult {
-            changeInShares?: number;
-            price?: number;
-            meta: Record<string, any>;
-          }
-
-          // Available parameters for strategy function
-          declare const data: StrategyFunctionData;
-          declare const result: StrategyFunctionResult;
-        `;
+            // Add type definitions extracted from our actual TypeScript files
+            const extraLibs = getCodeEditorTypes();
 
             monaco.languages.typescript.typescriptDefaults.addExtraLib(
               extraLibs,

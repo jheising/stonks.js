@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { backtest, type StrategyFunctionData, type StrategyFunctionResult, type BacktestResult } from './utils/backtester'
+import { backtest } from './utils/backtester'
+import type { StrategyFunctionData, StrategyFunctionResult, BacktestResult } from './types/backtesting'
 
 // Components
 import { ApiConfiguration, BacktestParameters, CodeEditor, ResultsDisplay, VersionModal } from './components'

@@ -1,4 +1,12 @@
 import { DateTime } from "luxon";
+import type { 
+    PortfolioData, 
+    StrategyFunctionData, 
+    StrategyFunctionResult, 
+    StrategyHistory, 
+    BacktestResult 
+} from '../types/backtesting';
+
 // Utils functions for basic calculations
 const Utils = {
     percentChange: (newValue: number, oldValue: number): number => {
@@ -6,59 +14,6 @@ const Utils = {
         return ((newValue - oldValue) / oldValue) * 100;
     }
 };
-
-// INCLUDE IN CODE EDITOR TYPES
-export interface Bar {
-    timestamp: string;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
-}
-
-// INCLUDE IN CODE EDITOR TYPES
-export interface StrategyFunctionData {
-    // Zero-based index of the current step
-    stepIndex: number;
-    bars: Bar[];
-    currentBar: Bar;
-    previousBar: Bar;
-    nextBar: Bar;
-
-    currentPortfolio: PortfolioData;
-
-    strategyResults: StrategyFunctionResult[];
-    previousStrategyResult?: StrategyFunctionResult;
-}
-
-// INCLUDE IN CODE EDITOR TYPES
-export interface StrategyFunctionResult {
-    changeInShares?: number;
-    price?: number;
-    meta: Record<string, any>;
-}
-
-export interface StrategyHistory {
-    strategyResult?: StrategyFunctionResult;
-    portfolioSnapshot: PortfolioData;
-    bar: Bar;
-}
-
-// INCLUDE IN CODE EDITOR TYPES
-export interface PortfolioData {
-    sharesOwned: number;
-    availableCash: number;
-    startingCash: number;
-    portfolioValue: number;
-    portfolioPercentChange: number;
-    buyAndHoldPercentChange: number;
-}
-
-export interface BacktestResult {
-    portfolioData: PortfolioData;
-    history: Array<StrategyHistory>;
-}
 
 export async function backtest(props: { apiKey: string, apiSecret: string, symbol: string, startDate: string, endDate?: string, startingAmount: number, strategy: (data: StrategyFunctionData) => Promise<StrategyFunctionResult> }): Promise<BacktestResult> {
     const { apiKey, apiSecret, symbol, startDate, endDate, startingAmount } = props;

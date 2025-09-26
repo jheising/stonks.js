@@ -1,4 +1,4 @@
-import type { BacktestResult } from './backtester'
+import type { BacktestResult } from '../types/backtesting'
 
 // Generate and download CSV of backtest results
 export const downloadCSV = (backtestResult: BacktestResult, stockSymbol: string) => {

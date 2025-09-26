@@ -1,5 +1,5 @@
 import React from 'react'
-import type { BacktestResult } from '../utils/backtester'
+import type { BacktestResult } from '../types/backtesting'
 import { downloadCSV } from '../utils/csvExport'
 
 interface ResultsDisplayProps {
