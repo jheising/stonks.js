@@ -43,7 +43,8 @@ A modern, web-based backtesting platform for stock trading strategies. Build, te
 ## 🛠️ Installation
 
 ### Prerequisites
-- Node.js 18+ and npm/yarn
+- Node.js 20.19.0+ or 22+ (required by Vite React plugin)
+- Yarn package manager
 - Alpaca Markets account (free tier available)
 
 ### Setup
@@ -266,6 +267,7 @@ If deployment fails:
 3. Verify the branch name is `main` (or update the workflow file)
 4. Make sure GitHub Pages is enabled in repository settings
 5. Verify `yarn.lock` is committed to the repository (required for GitHub Actions)
+6. **Node.js version errors**: Ensure GitHub Actions uses Node.js 22+ (configured in workflow file)
 
 ## 🤝 Contributing
 
