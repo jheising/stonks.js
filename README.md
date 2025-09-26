@@ -269,6 +269,22 @@ If deployment fails:
 5. Verify `yarn.lock` is committed to the repository (required for GitHub Actions)
 6. **Node.js version errors**: Ensure GitHub Actions uses Node.js 22+ (configured in workflow file)
 
+**Common Issues:**
+
+**404 errors on assets/scripts:**
+- The workflow automatically uses your repository name as the base path
+- If your repository name doesn't match `/backtester/`, this is automatically handled
+- For custom domains, use: `yarn build:github-root` (sets base path to `/`)
+
+**Manual base path override:**
+```bash
+# Build for root path (custom domains)
+NODE_ENV=production VITE_BASE_PATH=/ yarn build
+
+# Build for specific subdirectory
+NODE_ENV=production VITE_BASE_PATH=/your-repo-name/ yarn build
+```
+
 ## 🤝 Contributing
 
 1. Fork the repository

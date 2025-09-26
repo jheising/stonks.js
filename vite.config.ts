@@ -9,7 +9,10 @@ export default defineConfig({
   },
   plugins: [react(), tailwindcss()],
   // GitHub Pages deployment configuration
-  base: process.env.NODE_ENV === 'production' ? '/backtester/' : '/',
+  // Use VITE_BASE_PATH env var if set, otherwise default to '/backtester/'
+  base: process.env.NODE_ENV === 'production' 
+    ? (process.env.VITE_BASE_PATH || '/backtester/') 
+    : '/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

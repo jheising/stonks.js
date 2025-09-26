@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "build:github": "NODE_ENV=production yarn build",
+    "build:github-root": "NODE_ENV=production VITE_BASE_PATH=/ yarn build",
     "deploy:preview": "yarn build:github && yarn preview"
   },
   "dependencies": {

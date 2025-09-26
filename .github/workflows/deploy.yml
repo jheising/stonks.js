@@ -40,6 +40,7 @@ jobs:
       - name: Build application
         env:
           NODE_ENV: production
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
         run: yarn build
         
       - name: Setup Pages
