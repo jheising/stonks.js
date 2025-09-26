@@ -239,7 +239,27 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                             <span className="text-gray-900">${portfolioSnapshot.availableCash.toFixed(2)}</span>
                           </td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium text-right">
-                           <span className="text-gray-900">${portfolioSnapshot.portfolioValue.toFixed(2)}</span>
+                            {(() => {
+                              // Get previous portfolio value for comparison
+                              const previousPortfolioValue = index > 0 ? backtestResult.history[index - 1].portfolioSnapshot.portfolioValue : portfolioSnapshot.portfolioValue;
+                              const currentPortfolioValue = portfolioSnapshot.portfolioValue;
+                              
+                              // Determine color based on change
+                              let colorClass = 'text-gray-900'; // default
+                              if (index > 0) { // only apply color from second row onwards
+                                if (currentPortfolioValue > previousPortfolioValue) {
+                                  colorClass = 'text-green-600';
+                                } else if (currentPortfolioValue < previousPortfolioValue) {
+                                  colorClass = 'text-red-600';
+                                }
+                              }
+                              
+                              return (
+                                <span className={colorClass}>
+                                  ${portfolioSnapshot.portfolioValue.toFixed(2)}
+                                </span>
+                              );
+                            })()}
                           </td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
                             {strategyResult?.meta && Object.keys(strategyResult.meta).length > 0 ? (
