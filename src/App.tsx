@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { backtest } from './utils/backtester'
 import { parseStrategyError, createEnhancedStrategyWrapper, type ParsedError } from './utils/errorParser'
 import type { StrategyFunctionData, StrategyFunctionResult, BacktestResult } from './types/backtesting'
@@ -18,11 +18,13 @@ import { DEFAULT_STRATEGY } from './constants/defaultStrategy'
 
 // Types
 import type { CodeVersion } from './types'
+import type { StockDataProviderBase } from './providers/StockDataProviderBase'
+import { AlpacaDataProvider } from './providers/AlpacaDataProvider'
 
 function App() {
-  const [apiKey, setApiKey, { lastSaved: apiKeySaved }] = useLocalStorage(STORAGE_KEYS.API_KEY, '')
-  const [apiSecret, setApiSecret, { lastSaved: apiSecretSaved }] = useLocalStorage(STORAGE_KEYS.API_SECRET, '')
   const [code, setCode, { lastSaved: codeSaved }] = useLocalStorage(STORAGE_KEYS.STRATEGY_CODE, DEFAULT_STRATEGY)
+  const dataProvider = useRef<StockDataProviderBase>(new AlpacaDataProvider());
+  const [dataProviderSettings, setDataProviderSettings] = useLocalStorage(`${STORAGE_KEYS.DATA_PROVIDER_SETTINGS}:${dataProvider.current.constructor.name}`, {});
 
   // Backtest parameters
   const [startDate, setStartDate] = useLocalStorage(STORAGE_KEYS.START_DATE, '')
@@ -41,16 +43,16 @@ function App() {
   const [showInstructions, setShowInstructions] = useLocalStorage(STORAGE_KEYS.SHOW_INSTRUCTIONS, true)
 
   // Collapsible API section - default to expanded if credentials are missing
-  const [isApiSectionCollapsed, setIsApiSectionCollapsed] = useState(() => {
-    return !!(apiKey && apiSecret) // Collapsed if both credentials exist
-  })
+  // const [isApiSectionCollapsed, setIsApiSectionCollapsed] = useState(() => {
+  //   return !!(apiKey && apiSecret) // Collapsed if both credentials exist
+  // })
 
   // Auto-expand when credentials are cleared
-  useEffect(() => {
-    if (!apiKey && !apiSecret && isApiSectionCollapsed) {
-      setIsApiSectionCollapsed(false)
-    }
-  }, [apiKey, apiSecret, isApiSectionCollapsed])
+  // useEffect(() => {
+  //   if (!apiKey && !apiSecret && isApiSectionCollapsed) {
+  //     setIsApiSectionCollapsed(false)
+  //   }
+  // }, [apiKey, apiSecret, isApiSectionCollapsed])
 
   // Clear messages when form inputs change
   const clearMessages = () => {
@@ -67,7 +69,7 @@ function App() {
   const toggleMetaExpansion = (rowIndex: number, event: React.MouseEvent) => {
     event.preventDefault()
     event.stopPropagation()
-    
+
     const newExpanded = new Set(expandedMetaRows)
     if (newExpanded.has(rowIndex)) {
       newExpanded.delete(rowIndex)
@@ -80,7 +82,7 @@ function App() {
   // Expand all meta fields that have data
   const expandAllMeta = () => {
     if (!backtestResult) return
-    
+
     const rowsWithMeta = new Set<number>()
     backtestResult.history.forEach((historyItem, index) => {
       if (historyItem.strategyResult?.meta && Object.keys(historyItem.strategyResult.meta).length > 0) {
@@ -131,10 +133,10 @@ function App() {
       return
     }
 
-    if (!apiKey || !apiSecret) {
-      setBacktestError('API credentials are required for backtesting')
-      return
-    }
+    // if (!apiKey || !apiSecret) {
+    //   setBacktestError('API credentials are required for backtesting')
+    //   return
+    // }
 
     setIsRunning(true)
 
@@ -177,8 +179,7 @@ function App() {
 
       // Run the backtest
       const result = await backtest({
-        apiKey,
-        apiSecret,
+        dataProvider: dataProvider.current,
         symbol: stockSymbol.toUpperCase(),
         startDate,
         endDate: actualEndDate,
@@ -194,13 +195,13 @@ function App() {
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
-      
+
       // Parse the error for enhanced display
       if (error instanceof Error) {
         const parsed = parseStrategyError(error, code)
         setParsedError(parsed)
       }
-      
+
       setBacktestError(errorMessage)
       console.error('Backtest error:', error)
     } finally {
@@ -210,10 +211,11 @@ function App() {
 
   // Get the most recent save time
   const getLastSaveTime = () => {
-    const times = [apiKeySaved, apiSecretSaved, codeSaved].filter(Boolean) as Date[]
+    const times = [codeSaved].filter(Boolean) as Date[]
     return times.length > 0 ? new Date(Math.max(...times.map(t => t.getTime()))) : null
   }
 
+  const { isValid: isDataProviderConfigured } = dataProvider.current.isConfigured;
   const { isValid: isCodeValid } = validateCode(code)
   const { isValid: areParametersValid, error: parameterError } = validateParameters(
     startDate,
@@ -243,14 +245,9 @@ function App() {
 
         <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
           {/* API Configuration Section */}
-          <ApiConfiguration
-            apiKey={apiKey}
-            apiSecret={apiSecret}
-            onApiKeyChange={setApiKey}
-            onApiSecretChange={setApiSecret}
-            isCollapsed={isApiSectionCollapsed}
-            onToggleCollapsed={() => setIsApiSectionCollapsed(!isApiSectionCollapsed)}
-          />
+          <div className="bg-white rounded-lg shadow-md overflow-hidden p-6">
+            {dataProvider.current.renderSettings(dataProviderSettings, setDataProviderSettings)}
+          </div>
 
           {/* Backtest Parameters Section */}
           <BacktestParameters
@@ -282,7 +279,7 @@ function App() {
           <div className="flex justify-center">
             <button
               type="submit"
-              disabled={!isCodeValid || !areParametersValid || isRunning}
+              disabled={!isCodeValid || !areParametersValid || !isDataProviderConfigured || isRunning}
               className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2 cursor-pointer"
             >
               {isRunning && (

@@ -1,7 +1,6 @@
 // LocalStorage keys
 export const STORAGE_KEYS = {
-  API_KEY: 'backtest_api_key',
-  API_SECRET: 'backtest_api_secret',
+  DATA_PROVIDER_SETTINGS: 'backtest_data_provider_settings',
   STRATEGY_CODE: 'backtest_strategy_code',
   START_DATE: 'backtest_start_date',
   END_DATE: 'backtest_end_date',
