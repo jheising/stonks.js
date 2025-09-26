@@ -75,6 +75,8 @@ export const ApiConfiguration: React.FC<ApiConfigurationProps> = ({
                 onChange={(e) => onApiKeyChange(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter your Alpaca API Key"
+                autoComplete="new-password"
+                data-form-type="other"
                 required
               />
             </div>
@@ -89,6 +91,8 @@ export const ApiConfiguration: React.FC<ApiConfigurationProps> = ({
                 onChange={(e) => onApiSecretChange(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter your Alpaca API Secret"
+                autoComplete="new-password"
+                data-form-type="other"
                 required
               />
             </div>

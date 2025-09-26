@@ -236,7 +236,7 @@ function App() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
           {/* API Configuration Section */}
           <ApiConfiguration
             apiKey={apiKey}
