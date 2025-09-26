@@ -18,33 +18,29 @@ export const ApiConfiguration: React.FC<ApiConfigurationProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
           <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 mb-2">
-            API Key {apiKey && <span className="text-green-600 text-xs">✓ Saved</span>}
+            API Key <span className="text-red-500">*</span> {apiKey && <span className="text-green-600 text-xs">✓ Saved</span>}
           </label>
           <input
             type="password"
-            id="apiKey"
             value={apiKey}
             onChange={(e) => onApiKeyChange(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Enter your Alpaca API Key"
-            autoComplete="new-password"
-            data-form-type="other"
+            autoComplete="current-password"
             required
           />
         </div>
         <div>
           <label htmlFor="apiSecret" className="block text-sm font-medium text-gray-700 mb-2">
-            API Secret {apiSecret && <span className="text-green-600 text-xs">✓ Saved</span>}
+            API Secret <span className="text-red-500">*</span> {apiSecret && <span className="text-green-600 text-xs">✓ Saved</span>}
           </label>
           <input
             type="password"
-            id="apiSecret"
             value={apiSecret}
             onChange={(e) => onApiSecretChange(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Enter your Alpaca API Secret"
-            autoComplete="new-password"
-            data-form-type="other"
+            autoComplete="current-password"
             required
           />
         </div>

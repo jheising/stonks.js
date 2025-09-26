@@ -10,7 +10,6 @@ import { BacktestParameters, CodeEditor, ResultsDisplay, VersionModal } from './
 import { useLocalStorage } from './hooks/useLocalStorage'
 import { saveCodeVersion } from './utils/codeVersions'
 import { validateParameters, validateCode } from './utils/validation'
-import { formatSaveTime } from './utils/dateFormat'
 
 // Constants
 import { STORAGE_KEYS } from './constants/storage'
@@ -20,6 +19,7 @@ import { DEFAULT_STRATEGY } from './constants/defaultStrategy'
 import type { CodeVersion } from './types'
 import type { StockDataProviderBase } from './providers/StockDataProviderBase'
 import { AvailableProviders } from './providers/AvailableProviders'
+import { CollapseableBox } from './components/CollapseableBox'
 
 function App() {
   const [code, setCode, { lastSaved: codeSaved }] = useLocalStorage(STORAGE_KEYS.STRATEGY_CODE, DEFAULT_STRATEGY)
@@ -214,54 +214,48 @@ function App() {
           <h1 className="text-4xl font-bold text-gray-900">
             Stock Backtesting Tool
           </h1>
-          <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-600">
-              <div className="flex items-center space-x-2">
-                <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-                <span>Auto-saved {formatSaveTime(getLastSaveTime())}</span>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
+        <div className="space-y-6">
           {/* API Configuration Section */}
-          <div className="bg-white rounded-lg shadow-md overflow-hidden p-6">
+          <CollapseableBox title="Data Provider Configuration" saveState={true} saveStateKey={"API_CONFIGURATION_BOX"} forceOpen={!dataProvider.current.isConfigured.isValid}>
             {dataProvider.current.renderSettings(dataProviderSettings, setDataProviderSettings)}
-          </div>
+          </CollapseableBox>
 
           {/* Backtest Parameters Section */}
-          <BacktestParameters
-            stockSymbol={stockSymbol}
-            startingAmount={startingAmount}
-            startDate={startDate}
-            endDate={endDate}
-            onStockSymbolChange={setStockSymbol}
-            onStartingAmountChange={setStartingAmount}
-            onStartDateChange={setStartDate}
-            onEndDateChange={setEndDate}
-            onClearMessages={clearMessages}
-            parameterError={parameterError}
-          />
+          <CollapseableBox title="Backtest Parameters" saveState={true} saveStateKey={"BACKTEST_PARAMETERS_BOX"}>
+            <BacktestParameters
+              stockSymbol={stockSymbol}
+              startingAmount={startingAmount}
+              startDate={startDate}
+              endDate={endDate}
+              onStockSymbolChange={setStockSymbol}
+              onStartingAmountChange={setStartingAmount}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
+              onClearMessages={clearMessages}
+              parameterError={parameterError}
+            />
+          </CollapseableBox>
 
           {/* Code Editor Section */}
-          <CodeEditor
-            code={code}
-            onCodeChange={handleEditorChange}
-            showInstructions={showInstructions}
-            onToggleInstructions={() => setShowInstructions(!showInstructions)}
-            onShowVersionModal={() => setShowVersionModal(true)}
-            codeSaved={codeSaved}
-            isCodeValid={isCodeValid}
-            errorInfo={parsedError}
-          />
+          <CollapseableBox title="Strategy Code" saveState={true} saveStateKey={"CODE_EDITOR_BOX"} forceOpen={!isCodeValid}>
+            <CodeEditor
+              code={code}
+              onCodeChange={handleEditorChange}
+              showInstructions={showInstructions}
+              onToggleInstructions={() => setShowInstructions(!showInstructions)}
+              onShowVersionModal={() => setShowVersionModal(true)}
+              codeSaved={codeSaved}
+              isCodeValid={isCodeValid}
+              errorInfo={parsedError}
+            />
+          </CollapseableBox>
 
           {/* Submit Button */}
           <div className="flex justify-center">
             <button
-              type="submit"
+              onClick={handleSubmit}
               disabled={!isCodeValid || !areParametersValid || !isDataProviderConfigured || isRunning}
               className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2 cursor-pointer"
             >
@@ -296,7 +290,7 @@ function App() {
             }}
             onClearResult={() => setBacktestResult(null)}
           />
-        </form>
+        </div>
 
         {/* Version Modal */}
         <VersionModal

@@ -110,11 +110,8 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   }, [errorInfo])
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-semibold text-gray-800">
-          Strategy Code
-        </h2>
         <div className="flex items-center space-x-4">
           <button
             onClick={onToggleInstructions}

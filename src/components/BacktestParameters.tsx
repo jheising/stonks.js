@@ -28,11 +28,8 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
   const isReady = stockSymbol && startDate && startingAmount && parseFloat(startingAmount) > 0
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-semibold text-gray-800">
-          Backtest Parameters
-        </h2>
         <div className="text-xs text-gray-500">
           {isReady && (
             <span className="flex items-center space-x-1 text-green-600 bg-green-50 px-2 py-1 rounded-full">
