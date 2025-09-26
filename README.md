@@ -220,6 +220,56 @@ if (data.stepIndex >= 14) {
 - **API Keys**: Stored securely in localStorage (consider using environment variables for production)
 - **HTTPS Required**: Alpaca API requires secure connections
 
+## 🚀 GitHub Pages Deployment
+
+This project is configured for automatic deployment to GitHub Pages using GitHub Actions.
+
+### **Automatic Deployment Setup**
+
+1. **Push to GitHub**
+   ```bash
+   git add .
+   git commit -m "Initial commit"
+   git push origin main
+   ```
+
+2. **Enable GitHub Pages**
+   - Go to your repository on GitHub
+   - Navigate to **Settings** → **Pages**
+   - Under **Source**, select **"GitHub Actions"**
+   - The deployment will automatically trigger on the next push to `main`
+
+3. **Access Your Demo**
+   - Your app will be available at: `https://yourusername.github.io/backtester/`
+   - GitHub will provide the exact URL in the Pages settings
+
+### **Manual Local Testing**
+
+Test the production build locally before deploying:
+
+```bash
+# Build for GitHub Pages
+npm run build:github
+
+# Preview the production build
+npm run deploy:preview
+```
+
+### **Deployment Configuration**
+
+The project includes:
+- **Vite config** optimized for GitHub Pages with correct base paths
+- **GitHub Actions workflow** (`.github/workflows/deploy.yml`) for automatic deployment
+- **Production environment** handling for asset paths
+
+### **Troubleshooting Deployment**
+
+If deployment fails:
+1. Check the **Actions** tab in your GitHub repository for error logs
+2. Ensure your repository is public or you have GitHub Pro for private repo Pages
+3. Verify the branch name is `main` (or update the workflow file)
+4. Make sure GitHub Pages is enabled in repository settings
+
 ## 🤝 Contributing
 
 1. Fork the repository

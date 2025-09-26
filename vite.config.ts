@@ -8,4 +8,16 @@ export default defineConfig({
     port: 5175,
   },
   plugins: [react(), tailwindcss()],
+  // GitHub Pages deployment configuration
+  base: process.env.NODE_ENV === 'production' ? '/backtester/' : '/',
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    // Ensure paths are relative for GitHub Pages
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+  },
 })
