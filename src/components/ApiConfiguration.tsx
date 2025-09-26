@@ -13,8 +13,6 @@ export const ApiConfiguration: React.FC<ApiConfigurationProps> = ({
   onApiKeyChange,
   onApiSecretChange
 }) => {
-  const hasCredentials = apiKey && apiSecret
-
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">

@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { backtest } from './utils/backtester'
 import { parseStrategyError, createEnhancedStrategyWrapper, type ParsedError } from './utils/errorParser'
 import type { StrategyFunctionData, StrategyFunctionResult, BacktestResult } from './types/backtesting'
 
 // Components
-import { ApiConfiguration, BacktestParameters, CodeEditor, ResultsDisplay, VersionModal } from './components'
+import { BacktestParameters, CodeEditor, ResultsDisplay, VersionModal } from './components'
 
 // Hooks and utilities
 import { useLocalStorage } from './hooks/useLocalStorage'
@@ -19,11 +19,11 @@ import { DEFAULT_STRATEGY } from './constants/defaultStrategy'
 // Types
 import type { CodeVersion } from './types'
 import type { StockDataProviderBase } from './providers/StockDataProviderBase'
-import { AlpacaDataProvider } from './providers/AlpacaDataProvider'
+import { AvailableProviders } from './providers/AvailableProviders'
 
 function App() {
   const [code, setCode, { lastSaved: codeSaved }] = useLocalStorage(STORAGE_KEYS.STRATEGY_CODE, DEFAULT_STRATEGY)
-  const dataProvider = useRef<StockDataProviderBase>(new AlpacaDataProvider());
+  const dataProvider = useRef<StockDataProviderBase>(new AvailableProviders[0]());
   const [dataProviderSettings, setDataProviderSettings] = useLocalStorage(`${STORAGE_KEYS.DATA_PROVIDER_SETTINGS}:${dataProvider.current.constructor.name}`, {});
 
   // Backtest parameters
@@ -41,18 +41,6 @@ function App() {
   const [expandedMetaRows, setExpandedMetaRows] = useState<Set<number>>(new Set())
   const [showVersionModal, setShowVersionModal] = useState(false)
   const [showInstructions, setShowInstructions] = useLocalStorage(STORAGE_KEYS.SHOW_INSTRUCTIONS, true)
-
-  // Collapsible API section - default to expanded if credentials are missing
-  // const [isApiSectionCollapsed, setIsApiSectionCollapsed] = useState(() => {
-  //   return !!(apiKey && apiSecret) // Collapsed if both credentials exist
-  // })
-
-  // Auto-expand when credentials are cleared
-  // useEffect(() => {
-  //   if (!apiKey && !apiSecret && isApiSectionCollapsed) {
-  //     setIsApiSectionCollapsed(false)
-  //   }
-  // }, [apiKey, apiSecret, isApiSectionCollapsed])
 
   // Clear messages when form inputs change
   const clearMessages = () => {
@@ -132,11 +120,6 @@ function App() {
       setBacktestError('Starting investment amount must be greater than $0')
       return
     }
-
-    // if (!apiKey || !apiSecret) {
-    //   setBacktestError('API credentials are required for backtesting')
-    //   return
-    // }
 
     setIsRunning(true)
 
