@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import Editor from '@monaco-editor/react'
 import { formatSaveTime } from '../utils/dateFormat'
 import { getCodeEditorTypes } from '../utils/typeExtractor'
+import type { ParsedError } from '../utils/errorParser'
 
 interface CodeEditorProps {
   code: string
@@ -11,6 +12,7 @@ interface CodeEditorProps {
   onShowVersionModal: () => void
   codeSaved: Date | null
   isCodeValid: boolean
+  errorInfo?: ParsedError | null
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -20,8 +22,93 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   onToggleInstructions,
   onShowVersionModal,
   codeSaved,
-  isCodeValid
+  isCodeValid,
+  errorInfo
 }) => {
+  const editorRef = useRef<any>(null)
+  const monacoRef = useRef<any>(null)
+  const decorationsRef = useRef<any>(null)
+
+  // Clear error decorations
+  const clearErrorDecorations = () => {
+    if (decorationsRef.current) {
+      decorationsRef.current.clear()
+      decorationsRef.current = null
+    }
+  }
+
+  // Clear errors when code changes
+  useEffect(() => {
+    clearErrorDecorations()
+  }, [code])
+
+  // Clear errors when no error info is present
+  useEffect(() => {
+    if (!errorInfo) {
+      clearErrorDecorations()
+    }
+  }, [errorInfo])
+
+  // Handle error highlighting
+  useEffect(() => {
+    if (editorRef.current && monacoRef.current && errorInfo?.lineNumber) {
+      const editor = editorRef.current
+      const monaco = monacoRef.current
+
+      // Clear previous decorations
+      const model = editor.getModel()
+      if (model) {
+        // Validate line number against model
+        const lineCount = model.getLineCount()
+        const line = errorInfo.lineNumber
+        
+        // Only proceed if line number is valid
+        if (line < 1 || line > lineCount) {
+          console.warn(`Invalid line number ${line}, model has ${lineCount} lines`)
+          return
+        }
+
+        // Clear previous decorations using our stored references
+        clearErrorDecorations()
+
+        // Add new error decoration
+        const lineContent = model.getLineContent(line)
+        const startColumn = Math.max(1, Math.min(errorInfo.columnNumber || 1, lineContent.length + 1))
+        const endColumn = Math.min(lineContent.length + 1, startColumn + Math.max(1, lineContent.length - startColumn + 1))
+
+        try {
+          const newDecorations = [{
+            range: new monaco.Range(line, startColumn, line, endColumn),
+            options: {
+              isWholeLine: false,
+              className: 'monaco-error-highlight',
+              glyphMarginClassName: 'monaco-error-glyph',
+              minimap: {
+                color: '#ff0000',
+                position: monaco.editor.MinimapPosition.Inline
+              },
+              overviewRuler: {
+                color: '#ff0000',
+                position: monaco.editor.OverviewRulerLane.Full
+              },
+              marginClassName: 'monaco-error-margin',
+              hoverMessage: {
+                value: `**Error:** ${errorInfo.message}`
+              }
+            }
+          }]
+
+          decorationsRef.current = editor.createDecorationsCollection(newDecorations)
+
+          // Scroll to error line
+          editor.revealLineInCenter(line)
+        } catch (error) {
+          console.error('Error creating Monaco decorations:', error)
+        }
+      }
+    }
+  }, [errorInfo])
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex justify-between items-center mb-4">
@@ -84,7 +171,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
               <li><code className="bg-blue-100 px-1 rounded">data.previousBar</code> - Previous price bar</li>
               <li><code className="bg-blue-100 px-1 rounded">data.nextBar</code> - Next price bar (for reference)</li>
               <li><code className="bg-blue-100 px-1 rounded">data.currentPortfolio</code> - Portfolio state (shares, cash, value)</li>
-              <li><code className="bg-blue-100 px-1 rounded">data.stepIndex</code> - Current time step (0-based)</li>
+              <li><code className="bg-blue-100 px-1 rounded">data.dayNumber</code> - Current day number (0-based)</li>
             </ul>
             <p><strong>Return Object:</strong> Use the <code className="bg-blue-100 px-1 rounded">result</code> object to make trades:</p>
             <ul className="list-disc list-inside ml-4 space-y-1">
@@ -93,7 +180,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
               <li><code className="bg-blue-100 px-1 rounded">result.meta = {'{reason: "RSI oversold"}'}</code> - Strategy metadata</li>
             </ul>
             <p className="text-xs text-blue-600 mt-3">
-              <strong>Example:</strong> <code className="bg-blue-100 px-1 rounded">if (data.stepIndex === 0) result.changeInShares = 100</code> - Buy 100 shares on first bar
+              <strong>Example:</strong> <code className="bg-blue-100 px-1 rounded">if (data.dayNumber === 0) result.changeInShares = 100</code> - Buy 100 shares on first bar
             </p>
           </div>
         </div>
@@ -184,6 +271,10 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
             );
           }}
           onMount={(editor, monaco) => {
+            // Store references for error highlighting
+            editorRef.current = editor
+            monacoRef.current = monaco
+            
             // Set the model language to TypeScript explicitly
             const model = editor.getModel();
             if (model) {

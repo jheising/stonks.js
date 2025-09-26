@@ -14,6 +14,9 @@ A modern, web-based backtesting platform for stock trading strategies. Build, te
 - IntelliSense and auto-completion
 - Built-in strategy templates and examples
 - Real-time code validation
+- **Enhanced error highlighting** with line-specific visual indicators
+- **Precise error reporting** with line numbers and code context
+- **Auto-clearing errors** when code changes or new backtests run
 
 ### 📊 **Real Market Data Integration**
 - Connect to Alpaca Markets API for live stock data
@@ -86,7 +89,7 @@ A modern, web-based backtesting platform for stock trading strategies. Build, te
 ### 3. Write Your Strategy
 ```javascript
 // Example: Simple buy and hold strategy
-if (data.stepIndex === 0) {
+if (data.dayNumber === 0) {
   const sharesToBuy = Math.floor(1000 / data.currentBar.open);
   result.changeInShares = sharesToBuy;
   result.price = data.currentBar.open;
@@ -105,7 +108,7 @@ if (data.stepIndex === 0) {
 
 ### Available Data Properties
 ```javascript
-data.stepIndex        // Current time step (0-based)
+data.dayNumber        // Current day (0-based)
 data.currentBar       // Current price bar
 data.previousBar      // Previous price bar  
 data.nextBar          // Next price bar (for reference)
@@ -142,7 +145,7 @@ result.meta = { reason: "RSI signal" }; // Custom metadata (optional)
 const sma20 = data.bars.slice(-20).reduce((sum, bar) => sum + bar.close, 0) / 20;
 const sma50 = data.bars.slice(-50).reduce((sum, bar) => sum + bar.close, 0) / 50;
 
-if (data.stepIndex >= 50) { // Ensure we have enough data
+if (data.dayNumber >= 50) { // Ensure we have enough data
   if (sma20 > sma50 && data.currentPortfolio.sharesOwned === 0) {
     // Buy signal
     const sharesToBuy = Math.floor(data.currentPortfolio.availableCash / data.currentBar.close);
@@ -161,12 +164,12 @@ if (data.stepIndex >= 50) { // Ensure we have enough data
 #### RSI Strategy
 ```javascript
 // Simple RSI implementation
-if (data.stepIndex >= 14) {
+if (data.dayNumber >= 14) {
   const gains = [];
   const losses = [];
   
   for (let i = 1; i <= 14; i++) {
-    const change = data.bars[data.stepIndex - i + 1].close - data.bars[data.stepIndex - i].close;
+    const change = data.bars[data.dayNumber - i + 1].close - data.bars[data.dayNumber - i].close;
     if (change > 0) gains.push(change);
     else losses.push(Math.abs(change));
   }
@@ -188,6 +191,32 @@ if (data.stepIndex >= 14) {
 }
 ```
 
+## 🚨 Enhanced Error Handling
+
+The platform includes sophisticated error handling to help debug strategy code:
+
+### **Real-time Error Detection**
+- **Syntax errors**: Caught during code compilation with exact line numbers
+- **Runtime errors**: Captured during strategy execution with stack trace analysis
+- **Type validation**: Monaco editor provides real-time TypeScript validation
+
+### **Visual Error Indicators**
+- **Line highlighting**: Red wavy underlines at error locations in Monaco editor
+- **Margin indicators**: Red dots in editor gutter for quick error spotting
+- **Hover tooltips**: Detailed error messages on hover
+- **Auto-scroll**: Automatic navigation to error line when errors occur
+
+### **Detailed Error Information**
+- **Precise line numbers**: Accurate mapping from compiled code to source code
+- **Code context**: 5-line context window showing surrounding code
+- **Error categorization**: Syntax, runtime, or unknown error types
+- **Column positions**: Exact character position where errors occur
+
+### **Smart Error Clearing**
+- **Auto-clear on edit**: Error highlights disappear when you start typing
+- **Backtest reset**: Errors clear when running new backtests
+- **Parameter changes**: Previous errors clear when modifying backtest settings
+
 ## 🏗️ Technical Architecture
 
 ### Frontend Stack
@@ -198,24 +227,26 @@ if (data.stepIndex >= 14) {
 - **Luxon** for date/time handling
 
 ### Key Components
-- `CodeEditor` - Monaco-based strategy editor with TypeScript support
+- `CodeEditor` - Monaco-based strategy editor with TypeScript support and error highlighting
 - `BacktestParameters` - Form for configuring backtest settings
-- `ResultsDisplay` - Interactive results dashboard with data visualization
+- `ResultsDisplay` - Interactive results dashboard with enhanced error display
 - `ApiConfiguration` - Secure API credential management
+- `TypeExtractor` - Dynamic type definition system that syncs TypeScript types with Monaco editor
 
 ### Data Flow
-1. User writes strategy in Monaco editor
-2. Code is validated and transpiled to executable JavaScript
+1. User writes strategy in Monaco editor with real-time TypeScript validation
+2. Code is validated, enhanced with error tracking, and transpiled to executable JavaScript
 3. Alpaca API fetches historical market data
-4. Backtesting engine executes strategy against historical data
-5. Results are displayed with interactive charts and tables
+4. Backtesting engine executes strategy with enhanced error capture
+5. Results are displayed with interactive charts and detailed error reporting if needed
 
 ## 🔒 Security & Privacy
 
 - **Local Storage**: All data stored locally in browser
 - **No Server**: Pure client-side application
-- **API Keys**: Stored securely in localStorage (consider using environment variables for production)
+- **API Keys**: Stored securely in localStorage with auto-complete prevention
 - **HTTPS Required**: Alpaca API requires secure connections
+- **Browser Security**: API credential fields prevent password manager save prompts
 
 ## 🚀 GitHub Pages Deployment
 

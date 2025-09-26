@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+/* Monaco Editor Error Highlighting */
+.monaco-error-highlight {
+  background-color: rgba(255, 0, 0, 0.1) !important;
+  border-bottom: 2px wavy red !important;
+}
+
+.monaco-error-glyph {
+  background-color: #ff0000 !important;
+  border-radius: 50% !important;
+  width: 8px !important;
+  height: 8px !important;
+  margin-left: 2px !important;
+}
+
+.monaco-error-margin {
+  background-color: rgba(255, 0, 0, 0.1) !important;
+}

@@ -1,11 +1,13 @@
 import React from 'react'
 import type { BacktestResult } from '../types/backtesting'
+import type { ParsedError } from '../utils/errorParser'
 import { downloadCSV } from '../utils/csvExport'
 
 interface ResultsDisplayProps {
   backtestResult: BacktestResult | null
   backtestSuccess: string | null
   backtestError: string | null
+  parsedError: ParsedError | null
   stockSymbol: string
   expandedMetaRows: Set<number>
   onToggleMetaExpansion: (rowIndex: number, event: React.MouseEvent) => void
@@ -20,6 +22,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   backtestResult,
   // backtestSuccess,
   backtestError,
+  parsedError,
   stockSymbol,
   expandedMetaRows,
   onToggleMetaExpansion,
@@ -76,63 +79,33 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+          <div className="bg-white rounded-lg p-4 border border-blue-100">
+              <div className="text-sm text-gray-500 mb-1">Starting Total Portfolio Value</div>
+              <div className="text-xl font-semibold text-gray-900">
+                ${backtestResult.portfolioData.startingCash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+            </div>
+
             <div className="bg-white rounded-lg p-4 border border-blue-100">
-              <div className="text-sm text-gray-500 mb-1">Final Portfolio Value</div>
+              <div className="text-sm text-gray-500 mb-1">Final Total Portfolio Value</div>
               <div className="text-2xl font-bold text-gray-900">
                 ${backtestResult.portfolioData.portfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
 
             <div className="bg-white rounded-lg p-4 border border-blue-100">
-              <div className="text-sm text-gray-500 mb-1">Strategy Return</div>
+              <div className="text-sm text-gray-500 mb-1">Market Performance</div>
+              <div className={`text-2xl font-bold ${backtestResult.portfolioData.stockPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {backtestResult.portfolioData.stockPercentChange >= 0 ? '+' : ''}{backtestResult.portfolioData.stockPercentChange.toFixed(2)}%
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg p-4 border border-blue-100">
+              <div className="text-sm text-gray-500 mb-1">Strategy Performance</div>
               <div className={`text-2xl font-bold ${backtestResult.portfolioData.portfolioPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {backtestResult.portfolioData.portfolioPercentChange >= 0 ? '+' : ''}{backtestResult.portfolioData.portfolioPercentChange.toFixed(2)}%
               </div>
-            </div>
-
-            <div className="bg-white rounded-lg p-4 border border-blue-100">
-              <div className="text-sm text-gray-500 mb-1">Buy & Hold Return</div>
-              <div className={`text-2xl font-bold ${backtestResult.portfolioData.buyAndHoldPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {backtestResult.portfolioData.buyAndHoldPercentChange >= 0 ? '+' : ''}{backtestResult.portfolioData.buyAndHoldPercentChange.toFixed(2)}%
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg p-4 border border-blue-100">
-              <div className="text-sm text-gray-500 mb-1">Shares Owned</div>
-              <div className="text-xl font-semibold text-gray-900">
-                {backtestResult.portfolioData.sharesOwned.toLocaleString('en-US', { maximumFractionDigits: 4 })}
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg p-4 border border-blue-100">
-              <div className="text-sm text-gray-500 mb-1">Available Cash</div>
-              <div className="text-xl font-semibold text-gray-900">
-                ${backtestResult.portfolioData.availableCash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg p-4 border border-blue-100">
-              <div className="text-sm text-gray-500 mb-1">Starting Amount</div>
-              <div className="text-xl font-semibold text-gray-900">
-                ${backtestResult.portfolioData.startingCash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </div>
-            </div>
-          </div>
-
-          {/* Performance Comparison */}
-          <div className="mt-6 bg-white rounded-lg p-4 border border-blue-100">
-            <h4 className="text-md font-semibold text-gray-800 mb-3">Performance Comparison</h4>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Strategy vs Buy & Hold:</span>
-              <span className={`font-semibold ${backtestResult.portfolioData.portfolioPercentChange >= backtestResult.portfolioData.buyAndHoldPercentChange
-                  ? 'text-green-600'
-                  : 'text-red-600'
-                }`}>
-                {backtestResult.portfolioData.portfolioPercentChange >= backtestResult.portfolioData.buyAndHoldPercentChange ? '+' : ''}
-                {(backtestResult.portfolioData.portfolioPercentChange - backtestResult.portfolioData.buyAndHoldPercentChange).toFixed(2)}%
-                {backtestResult.portfolioData.portfolioPercentChange >= backtestResult.portfolioData.buyAndHoldPercentChange ? ' outperformance' : ' underperformance'}
-              </span>
             </div>
           </div>
 
@@ -183,9 +156,9 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Low</th>
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Close</th>
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Volume</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Shares Owned</th>
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Buy/Sell Shares</th>
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Buy/Sell Price</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Shares Owned</th>
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Cash</th>
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Portfolio Value</th>
                     <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Meta</th>
@@ -197,7 +170,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                     const strategyResult = historyItem.strategyResult;
                     const portfolioSnapshot = historyItem.portfolioSnapshot;
                     return (
-                      <>
+                      <React.Fragment key={index}>
                         <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                           <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                             {new Date(bar.timestamp).toLocaleDateString()}
@@ -220,6 +193,9 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                           <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
                             {bar.volume.toLocaleString()}
                           </td>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium text-right">
+                            {portfolioSnapshot.sharesOwned.toLocaleString()}
+                          </td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
                             {strategyResult?.changeInShares !== undefined && strategyResult.changeInShares !== 0 ? (
                               <span className={strategyResult.changeInShares > 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
@@ -231,9 +207,6 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                           </td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
                             {strategyResult?.price !== undefined ? `$${strategyResult.price.toFixed(2)}` : '-'}
-                          </td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium text-right">
-                            {portfolioSnapshot.sharesOwned.toLocaleString()}
                           </td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium text-right">
                             <span className="text-gray-900">${portfolioSnapshot.availableCash.toFixed(2)}</span>
@@ -287,7 +260,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                             </td>
                           </tr>
                         )}
-                      </>
+                      </React.Fragment>
                     );
                   })}
                 </tbody>
@@ -300,17 +273,45 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
       {/* Error Display */}
       {backtestError && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex items-center">
-            <svg className="w-5 h-5 text-red-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+          <div className="flex items-start">
+            <svg className="w-5 h-5 text-red-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L10 11.414l1.293-1.293a1 1 0 001.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
-            <div>
-              <h3 className="text-sm font-medium text-red-800">Backtest Error</h3>
-              <p className="text-sm text-red-700 mt-1">{backtestError}</p>
+            <div className="flex-grow">
+              <h3 className="text-sm font-medium text-red-800">
+                Strategy Error
+                {parsedError?.errorType && (
+                  <span className="ml-2 px-2 py-0.5 text-xs bg-red-100 text-red-600 rounded">
+                    {parsedError.errorType}
+                  </span>
+                )}
+              </h3>
+              
+              {/* Enhanced error message */}
+              <div className="mt-2">
+                {parsedError?.lineNumber ? (
+                  <p className="text-sm text-red-700">
+                    <span className="font-semibold">Line {parsedError.lineNumber}</span>
+                    {parsedError.columnNumber && <span>, Column {parsedError.columnNumber}</span>}: {parsedError.message}
+                  </p>
+                ) : (
+                  <p className="text-sm text-red-700">{backtestError}</p>
+                )}
+              </div>
+
+              {/* Code context */}
+              {parsedError?.codeContext && (
+                <div className="mt-3">
+                  <h4 className="text-xs font-medium text-red-800 mb-2">Code Context:</h4>
+                  <pre className="text-xs text-red-700 bg-red-100 p-2 rounded overflow-x-auto whitespace-pre">
+                    {parsedError.codeContext}
+                  </pre>
+                </div>
+              )}
             </div>
             <button
               onClick={onClearError}
-              className="ml-auto text-red-400 hover:text-red-600 cursor-pointer"
+              className="ml-3 text-red-400 hover:text-red-600 cursor-pointer flex-shrink-0"
             >
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />

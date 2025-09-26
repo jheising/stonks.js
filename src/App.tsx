@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { backtest } from './utils/backtester'
+import { parseStrategyError, createEnhancedStrategyWrapper, type ParsedError } from './utils/errorParser'
 import type { StrategyFunctionData, StrategyFunctionResult, BacktestResult } from './types/backtesting'
 
 // Components
@@ -32,6 +33,7 @@ function App() {
   // Loading and error states
   const [isRunning, setIsRunning] = useState(false)
   const [backtestError, setBacktestError] = useState<string | null>(null)
+  const [parsedError, setParsedError] = useState<ParsedError | null>(null)
   const [backtestSuccess, setBacktestSuccess] = useState<string | null>(null)
   const [backtestResult, setBacktestResult] = useState<BacktestResult | null>(null)
   const [expandedMetaRows, setExpandedMetaRows] = useState<Set<number>>(new Set())
@@ -52,8 +54,9 @@ function App() {
 
   // Clear messages when form inputs change
   const clearMessages = () => {
-    if (backtestError || backtestSuccess || backtestResult) {
+    if (backtestError || backtestSuccess || backtestResult || parsedError) {
       setBacktestError(null)
+      setParsedError(null)
       setBacktestSuccess(null)
       setBacktestResult(null)
       setExpandedMetaRows(new Set())
@@ -108,6 +111,7 @@ function App() {
 
     // Clear any previous messages
     setBacktestError(null)
+    setParsedError(null)
     setBacktestSuccess(null)
     setBacktestResult(null)
 
@@ -158,19 +162,13 @@ function App() {
             .replace(/export\s+/g, '')
             .replace(/import\s+.*?from\s+['"][^'"]*['"];?\s*/g, '')
 
-          // Wrap the code in an async function that returns the result
-          const wrappedCode = `
-            return (async function(data) {
-             const result = {
-              meta: {}
-             };
-              ${executableCode}
-              return result;
-            })(data);
-          `
+          // Use enhanced wrapper for better error tracking
+          const wrappedCode = createEnhancedStrategyWrapper(executableCode)
 
           return new Function('data', wrappedCode)
         } catch (error) {
+          const parsed = parseStrategyError(error as Error, code)
+          setParsedError(parsed)
           throw new Error(`Strategy code error: ${error instanceof Error ? error.message : 'Unknown error'}`)
         }
       }
@@ -196,6 +194,13 @@ function App() {
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+      
+      // Parse the error for enhanced display
+      if (error instanceof Error) {
+        const parsed = parseStrategyError(error, code)
+        setParsedError(parsed)
+      }
+      
       setBacktestError(errorMessage)
       console.error('Backtest error:', error)
     } finally {
@@ -270,6 +275,7 @@ function App() {
             onShowVersionModal={() => setShowVersionModal(true)}
             codeSaved={codeSaved}
             isCodeValid={isCodeValid}
+            errorInfo={parsedError}
           />
 
           {/* Submit Button */}
@@ -294,6 +300,7 @@ function App() {
             backtestResult={backtestResult}
             backtestSuccess={backtestSuccess}
             backtestError={backtestError}
+            parsedError={parsedError}
             stockSymbol={stockSymbol}
             expandedMetaRows={expandedMetaRows}
             onToggleMetaExpansion={toggleMetaExpansion}
@@ -303,7 +310,10 @@ function App() {
               setBacktestSuccess(null)
               setBacktestResult(null)
             }}
-            onClearError={() => setBacktestError(null)}
+            onClearError={() => {
+              setBacktestError(null)
+              setParsedError(null)
+            }}
             onClearResult={() => setBacktestResult(null)}
           />
         </form>
