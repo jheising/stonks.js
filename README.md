@@ -56,15 +56,11 @@ A modern, web-based backtesting platform for stock trading strategies. Build, te
 
 2. **Install dependencies**
    ```bash
-   npm install
-   # or
    yarn install
    ```
 
 3. **Start development server**
    ```bash
-   npm run dev
-   # or
    yarn dev
    ```
 
@@ -249,10 +245,10 @@ Test the production build locally before deploying:
 
 ```bash
 # Build for GitHub Pages
-npm run build:github
+yarn build:github
 
 # Preview the production build
-npm run deploy:preview
+yarn deploy:preview
 ```
 
 ### **Deployment Configuration**
@@ -269,6 +265,7 @@ If deployment fails:
 2. Ensure your repository is public or you have GitHub Pro for private repo Pages
 3. Verify the branch name is `main` (or update the workflow file)
 4. Make sure GitHub Pages is enabled in repository settings
+5. Verify `yarn.lock` is committed to the repository (required for GitHub Actions)
 
 ## 🤝 Contributing
 

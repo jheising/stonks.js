@@ -8,8 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "build:github": "NODE_ENV=production npm run build",
-    "deploy:preview": "npm run build:github && npm run preview"
+    "build:github": "NODE_ENV=production yarn build",
+    "deploy:preview": "yarn build:github && yarn preview"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
