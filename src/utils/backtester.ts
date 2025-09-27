@@ -1,4 +1,5 @@
 // Removed unused import: DateTime from luxon
+import currency from 'currency.js';
 import type {
     PortfolioData,
     StrategyFunctionData,
@@ -69,7 +70,11 @@ export async function backtest(props: { dataProvider: StockDataProviderBase, sym
 
         if (strategyResult.changeInShares && strategyResult.changeInShares !== 0) {
             portfolioData.sharesOwned += strategyResult.changeInShares;
-            portfolioData.availableCash -= strategyResult.changeInShares * (strategyResult.price ?? nextBar.open);
+            
+            // Use currency.js for precise cash calculation
+            const tradePrice = strategyResult.price ?? nextBar.open;
+            const tradeCost = currency(strategyResult.changeInShares).multiply(tradePrice);
+            portfolioData.availableCash = currency(portfolioData.availableCash).subtract(tradeCost).value;
         }
         else {
             strategyResult.price = undefined;
@@ -83,7 +88,9 @@ export async function backtest(props: { dataProvider: StockDataProviderBase, sym
             throw new Error("Available cash is negative");
         }
 
-        portfolioData.portfolioValue = portfolioData.sharesOwned * (strategyResult.price ?? nextBar.open) + portfolioData.availableCash;
+        // Use currency.js for precise portfolio value calculation
+        const stockValue = currency(portfolioData.sharesOwned).multiply(strategyResult.price ?? nextBar.open);
+        portfolioData.portfolioValue = stockValue.add(portfolioData.availableCash).value;
         portfolioData.portfolioPercentChange = MathUtils.percentChange(portfolioData.portfolioValue, portfolioData.startingCash);
         portfolioData.stockPercentChange = MathUtils.percentChange(nextBar.open, history[0].bar.open);
     }

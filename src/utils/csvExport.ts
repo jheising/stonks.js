@@ -1,3 +1,4 @@
+import currency from 'currency.js';
 import type { BacktestResult } from '../types/backtesting'
 
 // Generate and download CSV of backtest results
@@ -32,16 +33,16 @@ export const downloadCSV = (backtestResult: BacktestResult, stockSymbol: string)
       return [
         new Date(bar.timestamp).toLocaleDateString(),
         stockSymbol,
-        bar.open.toFixed(2),
-        bar.high.toFixed(2),
-        bar.low.toFixed(2),
-        bar.close.toFixed(2),
+        currency(bar.open).format({ pattern: '!#', separator: '', decimal: '.', precision: 2 }),
+        currency(bar.high).format({ pattern: '!#', separator: '', decimal: '.', precision: 2 }),
+        currency(bar.low).format({ pattern: '!#', separator: '', decimal: '.', precision: 2 }),
+        currency(bar.close).format({ pattern: '!#', separator: '', decimal: '.', precision: 2 }),
         bar.volume,
         strategyResult?.changeInShares || 0,
-        strategyResult?.price?.toFixed(2) || '',
+        strategyResult?.price ? currency(strategyResult.price).format({ pattern: '!#', separator: '', decimal: '.', precision: 2 }) : '',
         portfolioSnapshot.sharesOwned,
-        portfolioSnapshot.availableCash.toFixed(2),
-        portfolioSnapshot.portfolioValue.toFixed(2),
+        currency(portfolioSnapshot.availableCash).format({ pattern: '!#', separator: '', decimal: '.', precision: 2 }),
+        currency(portfolioSnapshot.portfolioValue).format({ pattern: '!#', separator: '', decimal: '.', precision: 2 }),
         strategyResult?.meta ? JSON.stringify(strategyResult.meta).replace(/"/g, '""') : ''
       ].join(',')
     })

@@ -1,4 +1,5 @@
 import React from 'react'
+import currency from 'currency.js'
 import type { BacktestResult } from '../types/backtesting'
 import type { ParsedError } from '../utils/errorParser'
 import { downloadCSV } from '../utils/csvExport'
@@ -107,7 +108,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
             <div className="bg-tuna-600 rounded-lg p-4 ">
               <div className="text-sm text-tuna-300 mb-1 uppercase font-semibold">Final Total Portfolio Value</div>
               <div className="text-2xl font-semibold tracking-wide">
-                ${backtestResult.portfolioData.portfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {currency(backtestResult.portfolioData.portfolioValue).format()}
               </div>
             </div>
 
@@ -197,16 +198,16 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                             {stockSymbol}
                           </td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-right tracking-wider">
-                            ${bar.open.toFixed(2)}
+                            {currency(bar.open).format()}
                           </td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-right tracking-wider">
-                            ${bar.high.toFixed(2)}
+                            {currency(bar.high).format()}
                           </td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-right tracking-wider">
-                            ${bar.low.toFixed(2)}
+                            {currency(bar.low).format()}
                           </td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-right tracking-wider">
-                            ${bar.close.toFixed(2)}
+                            {currency(bar.close).format()}
                           </td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-right tracking-wider">
                             {bar.volume.toLocaleString()}
@@ -224,10 +225,10 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                             )}
                           </td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm text-right font-medium tracking-wider">
-                            {strategyResult?.price !== undefined ? `$${strategyResult.price.toFixed(2)}` : <span className="text-tuna-400">-</span>}
+                            {strategyResult?.price !== undefined ? currency(strategyResult.price).format() : <span className="text-tuna-400">-</span>}
                           </td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm text-right font-medium tracking-wider">
-                            <span>${portfolioSnapshot.availableCash.toFixed(2)}</span>
+                            <span>{currency(portfolioSnapshot.availableCash).format()}</span>
                           </td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm text-right font-medium tracking-wider">
                             {(() => {
@@ -247,7 +248,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
                               return (
                                 <span className={colorClass}>
-                                  ${portfolioSnapshot.portfolioValue.toFixed(2)}
+                                  {currency(portfolioSnapshot.portfolioValue).format()}
                                 </span>
                               );
                             })()}
