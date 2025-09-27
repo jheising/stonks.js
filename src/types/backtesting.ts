@@ -41,6 +41,7 @@ export interface StrategyFunctionData {
 export interface BacktestResult {
   portfolioData: PortfolioData;
   history: Array<StrategyHistory>;
+  timestamp: string; // ISO string of when the backtest was run
 }
 
 export interface BacktestMarketDataProps {

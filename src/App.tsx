@@ -4,7 +4,7 @@ import { parseStrategyError, createEnhancedStrategyWrapper, type ParsedError } f
 import type { StrategyFunctionData, StrategyFunctionResult, BacktestResult } from './types/backtesting'
 
 // Components
-import { BacktestParameters, CodeEditor, ResultsDisplay, VersionModal } from './components'
+import { BacktestParameters, CodeEditor, ResultsDisplay, VersionModal, DataProviderSelector } from './components'
 
 // Hooks and utilities
 import { useLocalStorage } from './hooks/useLocalStorage'
@@ -24,8 +24,23 @@ import { CollapseableBox } from './components/CollapseableBox'
 
 function App() {
   const [code, setCode, { lastSaved: codeSaved }] = useLocalStorage(STORAGE_KEYS.STRATEGY_CODE, DEFAULT_STRATEGY)
-  const dataProvider = useRef<StockDataProviderBase>(new AvailableProviders[0]());
+  
+  // Data provider management
+  const [selectedProviderIndex, setSelectedProviderIndex] = useLocalStorage(STORAGE_KEYS.SELECTED_DATA_PROVIDER, 0)
+  const dataProvider = useRef<StockDataProviderBase>(new AvailableProviders[selectedProviderIndex]());
   const [dataProviderSettings, setDataProviderSettings] = useLocalStorage(`${STORAGE_KEYS.DATA_PROVIDER_SETTINGS}:${dataProvider.current.constructor.name}`, {});
+
+  // Handle provider switching
+  const handleProviderChange = (newIndex: number) => {
+    if (newIndex !== selectedProviderIndex && newIndex < AvailableProviders.length) {
+      setSelectedProviderIndex(newIndex)
+      // Create new provider instance
+      dataProvider.current = new AvailableProviders[newIndex]()
+      // Load settings for the new provider
+      const newProviderSettings = localStorage.getItem(`${STORAGE_KEYS.DATA_PROVIDER_SETTINGS}:${dataProvider.current.constructor.name}`)
+      setDataProviderSettings(newProviderSettings ? JSON.parse(newProviderSettings) : {})
+    }
+  }
 
   // Backtest settings - consolidated object approach
   const [backtestSettings, setBacktestSettings] = useLocalStorage<BacktestSettings>(STORAGE_KEYS.BACKTEST_SETTINGS, {
@@ -56,14 +71,13 @@ function App() {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
 
-  // Clear messages when form inputs change
+  // Clear messages when form inputs change (but keep results visible)
   const clearMessages = () => {
-    if (backtestError || backtestSuccess || backtestResult || parsedError) {
+    if (backtestError || backtestSuccess || parsedError) {
       setBacktestError(null)
       setParsedError(null)
       setBacktestSuccess(null)
-      setBacktestResult(null)
-      setExpandedMetaRows(new Set())
+      // Note: We intentionally keep backtestResult and expandedMetaRows so the table stays visible
     }
   }
 
@@ -218,8 +232,12 @@ function App() {
         </div> */}
 
         <div className="space-y-6">
-          {/* API Configuration Section */}
+          {/* Data Provider Configuration Section */}
           <CollapseableBox title="Data Provider Configuration" saveState={true} saveStateKey={"API_CONFIGURATION_BOX"} forceOpen={!dataProvider.current.isConfigured.isValid}>
+            <DataProviderSelector
+              selectedProviderIndex={selectedProviderIndex}
+              onProviderChange={handleProviderChange}
+            />
             {dataProvider.current.renderSettings(dataProviderSettings, setDataProviderSettings)}
           </CollapseableBox>
 

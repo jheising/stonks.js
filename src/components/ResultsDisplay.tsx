@@ -83,6 +83,18 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
       {/* Results Section */}
       {backtestResult && (
         <div>
+          {/* Results Header with Timestamp */}
+          <div className="mb-6 pb-4 border-b border-tuna-600">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-semibold">Backtest Results</h3>
+                <p className="text-sm text-tuna-400 mt-1">
+                  Run on {DateTime.fromISO(backtestResult.timestamp).toLocaleString(DateTime.DATETIME_FULL)}
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
             <div className="bg-tuna-600 rounded-lg p-4 ">

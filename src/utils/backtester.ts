@@ -80,6 +80,7 @@ export async function backtest(props: { dataProvider: StockDataProviderBase, sym
 
     return {
         portfolioData,
-        history: history
+        history: history,
+        timestamp: new Date().toISOString()
     };
 }
