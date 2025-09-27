@@ -249,7 +249,7 @@ function App() {
         {/* Header with Logo */}
         <div className="flex flex-col items-center mb-8">
           <img 
-            src="/stonks-logo.png" 
+            src={`${import.meta.env.BASE_URL}stonks-logo.png`} 
             alt="stonks.js logo" 
             className="w-32 h-32"
           />
