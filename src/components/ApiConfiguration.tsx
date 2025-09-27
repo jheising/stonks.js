@@ -18,7 +18,7 @@ export const ApiConfiguration: React.FC<ApiConfigurationProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
           <label htmlFor="apiKey" className="block text-sm font-medium  mb-2">
-            API Key <span className="text-pink-500">*</span> {apiKey && <span className="text-teal-400 text-xs">✓ Saved</span>}
+            API Key <span className="text-pink-500">*</span>
           </label>
           <input
             type="password"
@@ -32,7 +32,7 @@ export const ApiConfiguration: React.FC<ApiConfigurationProps> = ({
         </div>
         <div>
           <label htmlFor="apiSecret" className="block text-sm font-medium  mb-2">
-            API Secret <span className="text-pink-500">*</span> {apiSecret && <span className="text-teal-400 text-xs">✓ Saved</span>}
+            API Secret <span className="text-pink-500">*</span>
           </label>
           <input
             type="password"

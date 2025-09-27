@@ -51,7 +51,6 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
         <div>
           <label htmlFor="stockSymbol" className="block text-sm font-medium mb-2">
             Stock Symbol <span className="text-pink-500">*</span>
-            {stockSymbol && <span className="text-teal-400 text-xs ml-2">✓ Saved</span>}
           </label>
           <input
             type="text"
@@ -70,7 +69,6 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
         <div>
           <label htmlFor="startingAmount" className="block text-sm font-medium  mb-2">
             Starting Amount <span className="text-pink-500">*</span>
-            {startingAmount && parseFloat(startingAmount) > 0 && <span className="text-teal-400 text-xs ml-2">✓ Saved</span>}
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -95,7 +93,6 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
         <div>
           <label htmlFor="startDate" className="block text-sm font-medium  mb-2">
             Start Date <span className="text-pink-500">*</span>
-            {startDate && <span className="text-teal-400 text-xs ml-2">✓ Saved</span>}
           </label>
           <input
             type="date"
@@ -112,7 +109,6 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
         <div>
           <label htmlFor="endDate" className="block text-sm font-medium  mb-2">
             End Date <span className="text-tuna-400 text-xs">(optional)</span>
-            {endDate && <span className="text-teal-400 text-xs ml-2">✓ Saved</span>}
           </label>
           <input
             type="date"
@@ -131,7 +127,6 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
         <div>
           <label className="block text-sm font-medium mb-2">
             Bar Resolution <span className="text-tuna-400 text-xs">(optional)</span>
-            {barResolutionValue && barResolutionPeriod && <span className="text-teal-400 text-xs ml-2">✓ Saved</span>}
           </label>
           <div className="flex space-x-2">
             <input
