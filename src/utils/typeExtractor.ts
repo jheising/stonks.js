@@ -74,63 +74,10 @@ declare const result: StrategyFunctionResult;
 
 /**
  * Gets all the interfaces that should be included in the code editor
- * (marked with "INCLUDE IN CODE EDITOR TYPES" comment)
+ * Now includes all types from backtesting.ts without requiring comment markers
  */
 export function getCodeEditorTypes(): string {
-  const lines = backtestingTypesRaw.split('\n');
-  const interfaceBlocks: string[] = [];
-  
-  let currentBlock = '';
-  let shouldInclude = false;
-  let insideInterface = false;
-  let braceCount = 0;
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const trimmedLine = line.trim();
-    
-    // Check for the include marker
-    if (trimmedLine.includes('INCLUDE IN CODE EDITOR TYPES')) {
-      shouldInclude = true;
-      continue;
-    }
-    
-    // Check if this line starts an interface
-    if (trimmedLine.startsWith('export interface') && shouldInclude) {
-      insideInterface = true;
-      braceCount = 0;
-      currentBlock = line.replace('export interface', 'declare interface');
-      
-      // Count opening braces in this line
-      braceCount += (trimmedLine.match(/\{/g) || []).length;
-      braceCount -= (trimmedLine.match(/\}/g) || []).length;
-      
-      continue;
-    }
-    
-    if (insideInterface && shouldInclude) {
-      // Add the line to current block
-      currentBlock += '\n' + line;
-      
-      // Count braces to know when interface ends
-      braceCount += (trimmedLine.match(/\{/g) || []).length;
-      braceCount -= (trimmedLine.match(/\}/g) || []).length;
-      
-      // Interface is complete when braces are balanced
-      if (braceCount === 0) {
-        interfaceBlocks.push(currentBlock);
-        currentBlock = '';
-        insideInterface = false;
-        shouldInclude = false; // Reset for next interface
-      }
-    }
-  }
-  
-  const globalDeclarations = `
-// Available parameters for strategy function
-declare const data: StrategyFunctionData;
-declare const result: StrategyFunctionResult;
-`;
-
-  return interfaceBlocks.join('\n\n') + '\n' + globalDeclarations;
+  // Simply use the existing generateMonacoTypeDeclarations function
+  // which already extracts all interfaces from backtesting.ts
+  return generateMonacoTypeDeclarations();
 }

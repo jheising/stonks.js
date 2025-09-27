@@ -55,7 +55,7 @@ A modern, web-based backtesting platform for stock trading strategies. Build, te
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd backtester
+   cd stonks.js
    ```
 
 2. **Install dependencies**
@@ -90,9 +90,9 @@ A modern, web-based backtesting platform for stock trading strategies. Build, te
 ```javascript
 // Example: Simple buy and hold strategy
 if (data.dayNumber === 0) {
-  const sharesToBuy = Math.floor(1000 / data.currentBar.open);
+  const sharesToBuy = Math.floor(1000 / data.nextBar.open);
   result.changeInShares = sharesToBuy;
-  result.price = data.currentBar.open;
+  result.price = data.nextBar.open; // Optional - defaults to nextBar.open if not specified
 } else {
   // Hold for the rest of the period
   result.changeInShares = 0;
@@ -113,8 +113,7 @@ data.currentBar       // Current price bar
 data.previousBar      // Previous price bar  
 data.nextBar          // Next price bar (for reference)
 data.currentPortfolio // Portfolio state (shares, cash, value)
-data.bars            // All historical bars
-data.strategyResults // Previous strategy results
+data.history         // Array of previous strategy results and portfolio snapshots
 ```
 
 ### Bar Object Structure
@@ -132,8 +131,8 @@ data.strategyResults // Previous strategy results
 ### Strategy Result Object
 ```javascript
 // Modify the result object (don't return values)
-result.changeInShares = 10;           // Buy 10 shares (negative to sell)
-result.price = data.currentBar.close; // Execution price (optional)
+result.changeInShares = 10;         // Buy 10 shares (negative to sell)
+result.price = data.nextBar.open;   // Execution price (optional, defaults to nextBar.open)
 result.meta = { reason: "RSI signal" }; // Custom metadata (optional)
 ```
 
@@ -141,21 +140,25 @@ result.meta = { reason: "RSI signal" }; // Custom metadata (optional)
 
 #### Moving Average Crossover
 ```javascript
-// Calculate simple moving averages
-const sma20 = data.bars.slice(-20).reduce((sum, bar) => sum + bar.close, 0) / 20;
-const sma50 = data.bars.slice(-50).reduce((sum, bar) => sum + bar.close, 0) / 50;
-
+// Calculate simple moving averages using historical data
 if (data.dayNumber >= 50) { // Ensure we have enough data
+  // Get last 20 closing prices from history plus current bar
+  const last20Closes = data.history.slice(-19).map(h => h.bar.close).concat([data.currentBar.close]);
+  const last50Closes = data.history.slice(-49).map(h => h.bar.close).concat([data.currentBar.close]);
+  
+  const sma20 = last20Closes.reduce((sum, close) => sum + close, 0) / last20Closes.length;
+  const sma50 = last50Closes.reduce((sum, close) => sum + close, 0) / last50Closes.length;
+
   if (sma20 > sma50 && data.currentPortfolio.sharesOwned === 0) {
     // Buy signal
-    const sharesToBuy = Math.floor(data.currentPortfolio.availableCash / data.currentBar.close);
+    const sharesToBuy = Math.floor(data.currentPortfolio.availableCash / data.nextBar.open);
     result.changeInShares = sharesToBuy;
-    result.price = data.currentBar.close;
+    result.price = data.nextBar.open;
     result.meta = { signal: "buy", sma20, sma50 };
   } else if (sma20 < sma50 && data.currentPortfolio.sharesOwned > 0) {
     // Sell signal
     result.changeInShares = -data.currentPortfolio.sharesOwned;
-    result.price = data.currentBar.close;
+    result.price = data.nextBar.open;
     result.meta = { signal: "sell", sma20, sma50 };
   }
 }
@@ -163,29 +166,40 @@ if (data.dayNumber >= 50) { // Ensure we have enough data
 
 #### RSI Strategy
 ```javascript
-// Simple RSI implementation
-if (data.dayNumber >= 14) {
+// Simple RSI implementation using 14-period RSI
+if (data.dayNumber >= 13) { // Need at least 14 data points (0-13)
   const gains = [];
   const losses = [];
   
-  for (let i = 1; i <= 14; i++) {
-    const change = data.bars[data.dayNumber - i + 1].close - data.bars[data.dayNumber - i].close;
-    if (change > 0) gains.push(change);
-    else losses.push(Math.abs(change));
+  // Get the last 14 closing prices including current bar
+  const recentBars = data.history.slice(-13).map(h => h.bar.close).concat([data.currentBar.close]);
+  
+  // Calculate price changes over the last 14 periods
+  for (let i = 1; i < recentBars.length; i++) {
+    const change = recentBars[i] - recentBars[i - 1];
+    if (change > 0) {
+      gains.push(change);
+      losses.push(0);
+    } else {
+      gains.push(0);
+      losses.push(Math.abs(change));
+    }
   }
   
-  const avgGain = gains.reduce((sum, gain) => sum + gain, 0) / 14;
-  const avgLoss = losses.reduce((sum, loss) => sum + loss, 0) / 14;
-  const rsi = 100 - (100 / (1 + (avgGain / avgLoss)));
+  const avgGain = gains.reduce((sum, gain) => sum + gain, 0) / gains.length;
+  const avgLoss = losses.reduce((sum, loss) => sum + loss, 0) / losses.length;
+  const rsi = avgLoss === 0 ? 100 : 100 - (100 / (1 + (avgGain / avgLoss)));
   
   if (rsi < 30 && data.currentPortfolio.sharesOwned === 0) {
     // Oversold - buy
-    const sharesToBuy = Math.floor(data.currentPortfolio.availableCash / data.currentBar.close);
+    const sharesToBuy = Math.floor(data.currentPortfolio.availableCash / data.nextBar.open);
     result.changeInShares = sharesToBuy;
+    result.price = data.nextBar.open;
     result.meta = { rsi, signal: "oversold" };
   } else if (rsi > 70 && data.currentPortfolio.sharesOwned > 0) {
     // Overbought - sell
     result.changeInShares = -data.currentPortfolio.sharesOwned;
+    result.price = data.nextBar.open;
     result.meta = { rsi, signal: "overbought" };
   }
 }
@@ -236,9 +250,274 @@ The platform includes sophisticated error handling to help debug strategy code:
 ### Data Flow
 1. User writes strategy in Monaco editor with real-time TypeScript validation
 2. Code is validated, enhanced with error tracking, and transpiled to executable JavaScript
-3. Alpaca API fetches historical market data
+3. Selected data provider fetches historical market data
 4. Backtesting engine executes strategy with enhanced error capture
 5. Results are displayed with interactive charts and detailed error reporting if needed
+
+## 🏗️ Data Provider Architecture
+
+The platform uses a modular data provider system that allows easy integration of different market data sources. This architecture separates data fetching logic from the core backtesting engine, making it simple to add support for new APIs.
+
+### 📋 Provider Interface
+
+All data providers must extend the `StockDataProviderBase` abstract class:
+
+```typescript
+export abstract class StockDataProviderBase {
+  static readonly name: string = "ProviderName";
+  
+  // Fetch historical market data
+  abstract getBars(
+    props: BacktestMarketDataProps, 
+    abortSignal?: AbortSignal
+  ): Promise<Bar[]>;
+  
+  // Render provider-specific configuration UI
+  abstract renderSettings(
+    initialSettings: Record<string, any>, 
+    onSettingsChange: (settings: Record<string, any>) => void
+  ): React.ReactNode;
+  
+  // Validate provider configuration
+  abstract get isConfigured(): { isValid: boolean, error?: string };
+}
+```
+
+### 🔧 Required Implementation
+
+#### **1. Data Fetching (`getBars`)**
+- **Input**: `BacktestMarketDataProps` containing symbol, date range, and bar resolution
+- **Output**: Array of `Bar` objects with OHLCV data
+- **Features**: 
+  - Support for abort signals (cancellation)
+  - Handle pagination for large datasets
+  - Convert data to standardized `Bar` format
+  - Proper error handling and user-friendly messages
+
+#### **2. Settings UI (`renderSettings`)**
+- **Purpose**: Render provider-specific configuration (API keys, endpoints, etc.)
+- **Input**: Initial settings and change callback
+- **Output**: React component for configuration
+- **Features**:
+  - Real-time validation feedback
+  - Secure credential handling
+  - Auto-save functionality via callback
+
+#### **3. Configuration Validation (`isConfigured`)**
+- **Purpose**: Check if provider is ready to fetch data
+- **Output**: Validation result with optional error message
+- **Usage**: Enables/disables backtest functionality
+
+### 📊 Data Format Standards
+
+#### **Bar Object Structure**
+```typescript
+interface Bar {
+  timestamp: string;    // ISO 8601 format
+  open: number;        // Opening price
+  high: number;        // Highest price
+  low: number;         // Lowest price  
+  close: number;       // Closing price
+  volume: number;      // Trading volume
+}
+```
+
+#### **Market Data Request**
+```typescript
+interface BacktestMarketDataProps {
+  symbol: string;              // Stock ticker (e.g., "AAPL")
+  startDate: string;           // ISO date string
+  endDate?: string;            // Optional end date
+  barResolutionValue: string;  // Resolution value (e.g., "1", "5")
+  barResolutionPeriod: string; // Period type ("minute", "hour", "day", "week", "month")
+}
+```
+
+### 🛠️ Creating a New Data Provider
+
+#### **Step 1: Implement the Provider Class**
+
+```typescript
+// src/providers/YourDataProvider.tsx
+import React, { useState, useEffect } from "react";
+import { StockDataProviderBase } from "./StockDataProviderBase";
+import type { Bar, BacktestMarketDataProps } from "../types/backtesting";
+
+export class YourDataProvider extends StockDataProviderBase {
+  static readonly name: string = "Your Provider";
+  private settings?: { apiKey: string };
+
+  async getBars(props: BacktestMarketDataProps, abortSignal?: AbortSignal): Promise<Bar[]> {
+    const { symbol, startDate, endDate, barResolutionValue, barResolutionPeriod } = props;
+    
+    // Convert resolution to your API's format
+    const timeframe = this.convertTimeframe(barResolutionValue, barResolutionPeriod);
+    
+    // Build API request
+    const url = `https://your-api.com/v1/bars/${symbol}?timeframe=${timeframe}&start=${startDate}`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${this.settings?.apiKey}`,
+        'Accept': 'application/json'
+      },
+      signal: abortSignal
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    // Convert to standard Bar format
+    return data.bars.map((bar: any) => ({
+      timestamp: bar.timestamp,
+      open: Number(bar.open),
+      high: Number(bar.high),
+      low: Number(bar.low),
+      close: Number(bar.close),
+      volume: Number(bar.volume)
+    }));
+  }
+
+  get isConfigured(): { isValid: boolean, error?: string } {
+    if (!this.settings?.apiKey) {
+      return { isValid: false, error: "API key required" };
+    }
+    return { isValid: true };
+  }
+
+  renderSettings(initialSettings: Record<string, any>, onSettingsChange: (settings: Record<string, any>) => void): React.ReactNode {
+    const [apiKey, setApiKey] = useState(initialSettings.apiKey ?? '');
+
+    useEffect(() => {
+      onSettingsChange({ apiKey });
+      this.settings = { apiKey };
+    }, [apiKey]);
+
+    return (
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">API Key</label>
+          <input
+            type="password"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            className="w-full px-3 py-2 border rounded-md"
+            placeholder="Enter your API key"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  private convertTimeframe(value: string, period: string): string {
+    // Convert standard resolution to your API's format
+    const numValue = parseInt(value);
+    switch (period) {
+      case 'minute': return `${numValue}m`;
+      case 'hour': return `${numValue}h`;
+      case 'day': return `${numValue}d`;
+      default: return '1d';
+    }
+  }
+}
+```
+
+#### **Step 2: Register the Provider**
+
+```typescript
+// src/providers/AvailableProviders.ts
+import { AlpacaDataProvider } from "./AlpacaDataProvider";
+import { YourDataProvider } from "./YourDataProvider";
+
+export const AvailableProviders = [
+  AlpacaDataProvider,
+  YourDataProvider  // Add your provider here
+] as const;
+```
+
+#### **Step 3: Test Your Provider**
+
+1. **Start the development server**: `yarn dev`
+2. **Select your provider** from the dropdown in the UI
+3. **Configure credentials** in the settings panel
+4. **Run a backtest** to verify data fetching works correctly
+
+### 🔍 Built-in Providers
+
+#### **Alpaca Markets Provider**
+- **Features**: Real-time and historical stock data via IEX feed
+- **Requirements**: Free Alpaca account with paper trading API keys
+- **Supported Resolutions**: 1min to 1month bars
+- **Rate Limits**: 200 requests/minute for free accounts
+- **Data Coverage**: US equities, extensive historical data
+
+### 💡 Provider Development Tips
+
+#### **Error Handling Best Practices**
+```typescript
+// Provide user-friendly error messages
+if (response.status === 401) {
+  throw new Error('Invalid API credentials. Please check your API key.');
+}
+if (response.status === 429) {
+  throw new Error('Rate limit exceeded. Please wait before trying again.');
+}
+if (response.status === 404) {
+  throw new Error(`Symbol '${symbol}' not found. Please verify the ticker symbol.`);
+}
+```
+
+#### **Pagination Support**
+```typescript
+// Handle large datasets with pagination
+async getBars(props: BacktestMarketDataProps, abortSignal?: AbortSignal): Promise<Bar[]> {
+  let allBars: Bar[] = [];
+  let nextPageToken: string | undefined;
+  
+  do {
+    const response = await this.fetchPage(props, nextPageToken, abortSignal);
+    allBars.push(...response.bars);
+    nextPageToken = response.nextPageToken;
+  } while (nextPageToken);
+  
+  return allBars;
+}
+```
+
+#### **Timezone Handling**
+```typescript
+// Ensure consistent timezone handling
+import { DateTime } from "luxon";
+
+// Convert to market timezone (e.g., Eastern for US markets)
+const marketTime = DateTime.fromISO(bar.timestamp)
+  .setZone('America/New_York')
+  .toISO();
+```
+
+#### **Caching Considerations**
+```typescript
+// Consider implementing caching for frequently requested data
+private cache = new Map<string, { data: Bar[], timestamp: number }>();
+
+private getCacheKey(props: BacktestMarketDataProps): string {
+  return `${props.symbol}-${props.startDate}-${props.endDate}-${props.barResolutionValue}${props.barResolutionPeriod}`;
+}
+```
+
+### 🚀 Advanced Features
+
+#### **Custom Timeframe Support**
+Some providers may support custom timeframes not available in the standard resolution options. You can extend the UI by modifying the `BacktestParameters` component to include provider-specific options.
+
+#### **Real-time Data Integration**
+While the current architecture focuses on historical backtesting, providers can be extended to support real-time data feeds for live strategy monitoring.
+
+#### **Multiple Asset Classes**
+The `Bar` interface can be extended to support additional asset classes (forex, crypto, commodities) by adding provider-specific metadata fields.
 
 ## 🔒 Security & Privacy
 
@@ -248,73 +527,25 @@ The platform includes sophisticated error handling to help debug strategy code:
 - **HTTPS Required**: Alpaca API requires secure connections
 - **Browser Security**: API credential fields prevent password manager save prompts
 
-## 🚀 GitHub Pages Deployment
+## 🚀 Building for Production
 
-This project is configured for automatic deployment to GitHub Pages using GitHub Actions.
-
-### **Automatic Deployment Setup**
-
-1. **Push to GitHub**
-   ```bash
-   git add .
-   git commit -m "Initial commit"
-   git push origin main
-   ```
-
-2. **Enable GitHub Pages**
-   - Go to your repository on GitHub
-   - Navigate to **Settings** → **Pages**
-   - Under **Source**, select **"GitHub Actions"**
-   - The deployment will automatically trigger on the next push to `main`
-
-3. **Access Your Demo**
-   - Your app will be available at: `https://yourusername.github.io/backtester/`
-   - GitHub will provide the exact URL in the Pages settings
-
-### **Manual Local Testing**
-
-Test the production build locally before deploying:
+Build the project for production deployment:
 
 ```bash
-# Build for GitHub Pages
+# Standard production build
+yarn build
+
+# Build for GitHub Pages (if deploying to GitHub Pages)
 yarn build:github
 
-# Preview the production build
+# Build for root path deployment (custom domains)
+yarn build:github-root
+
+# Preview the production build locally
 yarn deploy:preview
 ```
 
-### **Deployment Configuration**
-
-The project includes:
-- **Vite config** optimized for GitHub Pages with correct base paths
-- **GitHub Actions workflow** (`.github/workflows/deploy.yml`) for automatic deployment
-- **Production environment** handling for asset paths
-
-### **Troubleshooting Deployment**
-
-If deployment fails:
-1. Check the **Actions** tab in your GitHub repository for error logs
-2. Ensure your repository is public or you have GitHub Pro for private repo Pages
-3. Verify the branch name is `main` (or update the workflow file)
-4. Make sure GitHub Pages is enabled in repository settings
-5. Verify `yarn.lock` is committed to the repository (required for GitHub Actions)
-6. **Node.js version errors**: Ensure GitHub Actions uses Node.js 22+ (configured in workflow file)
-
-**Common Issues:**
-
-**404 errors on assets/scripts:**
-- The workflow automatically uses your repository name as the base path
-- If your repository name doesn't match `/backtester/`, this is automatically handled
-- For custom domains, use: `yarn build:github-root` (sets base path to `/`)
-
-**Manual base path override:**
-```bash
-# Build for root path (custom domains)
-NODE_ENV=production VITE_BASE_PATH=/ yarn build
-
-# Build for specific subdirectory
-NODE_ENV=production VITE_BASE_PATH=/your-repo-name/ yarn build
-```
+The built files will be in the `dist/` directory, ready for deployment to any static hosting service.
 
 ## 🤝 Contributing
 
@@ -326,7 +557,7 @@ NODE_ENV=production VITE_BASE_PATH=/your-repo-name/ yarn build
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
 
 ## 🙏 Acknowledgments
 
@@ -338,7 +569,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - 🐛 **Issues**: Report bugs via GitHub Issues
 - 💡 **Feature Requests**: Submit via GitHub Discussions
-- 📧 **Contact**: [Your contact information]
+- 📧 **Contact**: Create an issue on GitHub for support
 
 ---
 
