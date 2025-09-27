@@ -9,8 +9,13 @@ import type {
 import { MathUtils } from './MathUtils';
 import type { StockDataProviderBase } from '../providers/StockDataProviderBase';
 
-export async function backtest(props: { dataProvider: StockDataProviderBase, symbol: string, startDate: string, endDate?: string, startingAmount: number, barResolutionValue: string, barResolutionPeriod: string, strategy: (data: StrategyFunctionData) => Promise<StrategyFunctionResult> }): Promise<BacktestResult> {
-    const { dataProvider, symbol, startDate, endDate, startingAmount, barResolutionValue, barResolutionPeriod } = props;
+export async function backtest(props: { dataProvider: StockDataProviderBase, symbol: string, startDate: string, endDate?: string, startingAmount: number, barResolutionValue: string, barResolutionPeriod: string, strategy: (data: StrategyFunctionData) => Promise<StrategyFunctionResult>, abortSignal?: AbortSignal }): Promise<BacktestResult> {
+    const { dataProvider, symbol, startDate, endDate, startingAmount, barResolutionValue, barResolutionPeriod, abortSignal } = props;
+
+    // Check if cancelled before starting
+    if (abortSignal?.aborted) {
+        throw new Error('Backtest was cancelled');
+    }
 
     const bars = await dataProvider.getBars({
         symbol,
@@ -18,7 +23,7 @@ export async function backtest(props: { dataProvider: StockDataProviderBase, sym
         endDate,
         barResolutionValue,
         barResolutionPeriod
-    });
+    }, abortSignal);
 
     const history: Array<StrategyHistory> = [];
     const portfolioData: PortfolioData = {
@@ -31,6 +36,11 @@ export async function backtest(props: { dataProvider: StockDataProviderBase, sym
     };
 
     for (let i = 0; i < bars.length; i++) {
+        // Check for cancellation periodically
+        if (abortSignal?.aborted) {
+            throw new Error('Backtest was cancelled');
+        }
+
         const bar = bars[i];
         const previousBar = bars[i - 1];
         const nextBar = bars[i + 1];

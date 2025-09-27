@@ -63,6 +63,9 @@ function App() {
   const [parsedError, setParsedError] = useState<ParsedError | null>(null)
   const [backtestSuccess, setBacktestSuccess] = useState<string | null>(null)
   const [backtestResult, setBacktestResult] = useState<BacktestResult | null>(null)
+  
+  // Abort controller for cancelling running backtests
+  const abortControllerRef = useRef<AbortController | null>(null)
   const [expandedMetaRows, setExpandedMetaRows] = useState<Set<number>>(new Set())
   const [showVersionModal, setShowVersionModal] = useState(false)
   const [showInstructions, setShowInstructions] = useLocalStorage(STORAGE_KEYS.SHOW_INSTRUCTIONS, true)
@@ -127,6 +130,15 @@ function App() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // If already running, cancel the current backtest
+    if (isRunning && abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      setIsRunning(false)
+      setBacktestError('Backtest was cancelled by user')
+      abortControllerRef.current = null
+      return
+    }
+
     // Clear any previous messages
     setBacktestError(null)
     setParsedError(null)
@@ -140,6 +152,8 @@ function App() {
       return
     }
 
+    // Create new AbortController for this backtest
+    abortControllerRef.current = new AbortController()
     setIsRunning(true)
 
     try {
@@ -188,7 +202,8 @@ function App() {
         startingAmount: parseFloat(backtestSettings.startingAmount),
         barResolutionValue: backtestSettings.barResolutionValue,
         barResolutionPeriod: backtestSettings.barResolutionPeriod,
-        strategy: strategy as (data: StrategyFunctionData) => Promise<StrategyFunctionResult>
+        strategy: strategy as (data: StrategyFunctionData) => Promise<StrategyFunctionResult>,
+        abortSignal: abortControllerRef.current.signal
       })
 
       setBacktestResult(result)
@@ -201,18 +216,24 @@ function App() {
       saveCodeVersion(code)
 
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
-
-      // Parse the error for enhanced display
+      console.error('Backtest failed:', error)
+      
       if (error instanceof Error) {
-        const parsed = parseStrategyError(error, code)
-        setParsedError(parsed)
+        // Handle abort errors differently
+        if (error.name === 'AbortError' || error.message.includes('cancelled')) {
+          setBacktestError('Backtest was cancelled by user')
+        } else {
+          // Parse the error for enhanced display
+          const parsed = parseStrategyError(error, code)
+          setParsedError(parsed)
+          setBacktestError(error.message)
+        }
+      } else {
+        setBacktestError('An unexpected error occurred during backtesting')
       }
-
-      setBacktestError(errorMessage)
-      console.error('Backtest error:', error)
     } finally {
       setIsRunning(false)
+      abortControllerRef.current = null
     }
   }
 
@@ -269,7 +290,7 @@ function App() {
           <div className="flex justify-center">
             <button
               onClick={handleSubmit}
-              disabled={!isCodeValid || !areParametersValid || !isDataProviderConfigured || isRunning}
+              disabled={!isCodeValid || !areParametersValid || !isDataProviderConfigured}
               className="px-8 py-3 bg-teal-400 text-tuna-900 uppercase font-semibold rounded-lg shadow-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:bg-tuna-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2 "
             >
               {isRunning && (
@@ -278,7 +299,7 @@ function App() {
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               )}
-              <span>{isRunning ? 'Running Backtest...' : 'Run Backtest'}</span>
+              <span>{isRunning ? 'Cancel Backtest' : 'Run Backtest'}</span>
             </button>
           </div>
 
