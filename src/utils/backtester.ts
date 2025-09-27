@@ -1,4 +1,4 @@
-import { DateTime } from 'luxon';
+// Removed unused import: DateTime from luxon
 import type {
     PortfolioData,
     StrategyFunctionData,
@@ -9,10 +9,16 @@ import type {
 import { MathUtils } from './MathUtils';
 import type { StockDataProviderBase } from '../providers/StockDataProviderBase';
 
-export async function backtest(props: { dataProvider: StockDataProviderBase, symbol: string, startDate: string, endDate?: string, startingAmount: number, strategy: (data: StrategyFunctionData) => Promise<StrategyFunctionResult> }): Promise<BacktestResult> {
-    const { dataProvider, symbol, startDate, endDate, startingAmount } = props;
+export async function backtest(props: { dataProvider: StockDataProviderBase, symbol: string, startDate: string, endDate?: string, startingAmount: number, barResolutionValue: string, barResolutionPeriod: string, strategy: (data: StrategyFunctionData) => Promise<StrategyFunctionResult> }): Promise<BacktestResult> {
+    const { dataProvider, symbol, startDate, endDate, startingAmount, barResolutionValue, barResolutionPeriod } = props;
 
-    const bars = await dataProvider.getBars(symbol, startDate, endDate);
+    const bars = await dataProvider.getBars({
+        symbol,
+        startDate,
+        endDate,
+        barResolutionValue,
+        barResolutionPeriod
+    });
 
     const history: Array<StrategyHistory> = [];
     const portfolioData: PortfolioData = {

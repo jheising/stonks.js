@@ -1,31 +1,27 @@
 import React from 'react'
+import { TIME_PERIODS } from '../constants/storage'
+import type { BacktestSettings } from '../types/backtesting'
 
 interface BacktestParametersProps {
-  stockSymbol: string
-  startingAmount: string
-  startDate: string
-  endDate: string
-  onStockSymbolChange: (value: string) => void
-  onStartingAmountChange: (value: string) => void
-  onStartDateChange: (value: string) => void
-  onEndDateChange: (value: string) => void
+  settings: BacktestSettings
+  onSettingsChange: (settings: Partial<BacktestSettings>) => void
   onClearMessages: () => void
   parameterError?: string | null
 }
 
 export const BacktestParameters: React.FC<BacktestParametersProps> = ({
-  stockSymbol,
-  startingAmount,
-  startDate,
-  endDate,
-  onStockSymbolChange,
-  onStartingAmountChange,
-  onStartDateChange,
-  onEndDateChange,
+  settings,
+  onSettingsChange,
   onClearMessages,
   parameterError
 }) => {
+  const { stockSymbol, startingAmount, startDate, endDate, barResolutionValue, barResolutionPeriod } = settings
   const isReady = stockSymbol && startDate && startingAmount && parseFloat(startingAmount) > 0
+
+  const handleChange = (key: keyof BacktestSettings, value: string) => {
+    onSettingsChange({ [key]: value })
+    onClearMessages()
+  }
 
   return (
     <div>
@@ -50,7 +46,7 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
         {/* Stock Symbol */}
         <div>
           <label htmlFor="stockSymbol" className="block text-sm font-medium mb-2">
@@ -61,10 +57,7 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
             type="text"
             id="stockSymbol"
             value={stockSymbol}
-            onChange={(e) => {
-              onStockSymbolChange(e.target.value.toUpperCase())
-              onClearMessages()
-            }}
+            onChange={(e) => handleChange('stockSymbol', e.target.value.toUpperCase())}
             className="w-full px-3 py-2 border border-tuna-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
             placeholder="e.g., AAPL"
             maxLength={5}
@@ -87,10 +80,7 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
               type="number"
               id="startingAmount"
               value={startingAmount}
-              onChange={(e) => {
-                onStartingAmountChange(e.target.value)
-                onClearMessages()
-              }}
+              onChange={(e) => handleChange('startingAmount', e.target.value)}
               className="w-full pl-7 pr-3 py-2 border border-tuna-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
               placeholder="10000"
               min="0.01"
@@ -111,10 +101,7 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
             type="date"
             id="startDate"
             value={startDate}
-            onChange={(e) => {
-              onStartDateChange(e.target.value)
-              onClearMessages()
-            }}
+            onChange={(e) => handleChange('startDate', e.target.value)}
             max={new Date().toISOString().split('T')[0]}
             className="w-full px-3 py-2 border border-tuna-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
             required
@@ -131,16 +118,53 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
             type="date"
             id="endDate"
             value={endDate}
-            onChange={(e) => {
-              onEndDateChange(e.target.value)
-              onClearMessages()
-            }}
+            onChange={(e) => handleChange('endDate', e.target.value)}
             max={new Date().toISOString().split('T')[0]}
             className="w-full px-3 py-2 border border-tuna-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
           />
           {startDate && endDate && new Date(endDate) < new Date(startDate) && (
             <p className="mt-1 text-xs text-amber-600">End date should be after start date</p>
           )}
+        </div>
+
+        {/* Bar Resolution */}
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Bar Resolution <span className="text-tuna-400 text-xs">(optional)</span>
+            {barResolutionValue && barResolutionPeriod && <span className="text-teal-400 text-xs ml-2">✓ Saved</span>}
+          </label>
+          <div className="flex space-x-2">
+            <input
+              type="number"
+              id="barResolutionValue"
+              value={barResolutionValue}
+              onChange={(e) => {
+                const value = e.target.value
+                if (value === '' || (parseInt(value) > 0 && parseInt(value) <= 999)) {
+                  handleChange('barResolutionValue', value)
+                }
+              }}
+              className="w-20 px-3 py-2 border border-tuna-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              placeholder="1"
+              min="1"
+              max="999"
+            />
+            <select
+              id="barResolutionPeriod"
+              value={barResolutionPeriod}
+              onChange={(e) => handleChange('barResolutionPeriod', e.target.value)}
+              className="flex-1 px-3 py-2 border border-tuna-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+            >
+              <option value={TIME_PERIODS.MINUTE}>minute{barResolutionValue !== '1' ? 's' : ''}</option>
+              <option value={TIME_PERIODS.HOUR}>hour{barResolutionValue !== '1' ? 's' : ''}</option>
+              <option value={TIME_PERIODS.DAY}>day{barResolutionValue !== '1' ? 's' : ''}</option>
+              <option value={TIME_PERIODS.WEEK}>week{barResolutionValue !== '1' ? 's' : ''}</option>
+              <option value={TIME_PERIODS.MONTH}>month{barResolutionValue !== '1' ? 's' : ''}</option>
+            </select>
+          </div>
+          <p className="mt-1 text-xs text-tuna-500">
+            Data frequency for bars (default: 1 day)
+          </p>
         </div>
       </div>
 

@@ -12,12 +12,13 @@ import { saveCodeVersion } from './utils/codeVersions'
 import { validateParameters, validateCode } from './utils/validation'
 
 // Constants
-import { STORAGE_KEYS } from './constants/storage'
+import { STORAGE_KEYS, TIME_PERIODS } from './constants/storage'
 import { DEFAULT_STRATEGY } from './constants/defaultStrategy'
 
 // Types
 import type { CodeVersion } from './types'
 import type { StockDataProviderBase } from './providers/StockDataProviderBase'
+import type { BacktestSettings } from './types/backtesting'
 import { AvailableProviders } from './providers/AvailableProviders'
 import { CollapseableBox } from './components/CollapseableBox'
 
@@ -26,11 +27,20 @@ function App() {
   const dataProvider = useRef<StockDataProviderBase>(new AvailableProviders[0]());
   const [dataProviderSettings, setDataProviderSettings] = useLocalStorage(`${STORAGE_KEYS.DATA_PROVIDER_SETTINGS}:${dataProvider.current.constructor.name}`, {});
 
-  // Backtest parameters
-  const [startDate, setStartDate] = useLocalStorage(STORAGE_KEYS.START_DATE, '')
-  const [endDate, setEndDate] = useLocalStorage(STORAGE_KEYS.END_DATE, '')
-  const [stockSymbol, setStockSymbol] = useLocalStorage(STORAGE_KEYS.STOCK_SYMBOL, '')
-  const [startingAmount, setStartingAmount] = useLocalStorage(STORAGE_KEYS.STARTING_AMOUNT, '10000')
+  // Backtest settings - consolidated object approach
+  const [backtestSettings, setBacktestSettings] = useLocalStorage<BacktestSettings>(STORAGE_KEYS.BACKTEST_SETTINGS, {
+    stockSymbol: '',
+    startingAmount: '10000',
+    startDate: '',
+    endDate: '',
+    barResolutionValue: '1',
+    barResolutionPeriod: TIME_PERIODS.DAY
+  })
+
+  // Helper function to update backtest settings
+  const updateBacktestSettings = (updates: Partial<BacktestSettings>) => {
+    setBacktestSettings(prev => ({ ...prev, ...updates }))
+  }
 
   // Loading and error states
   const [isRunning, setIsRunning] = useState(false)
@@ -105,32 +115,23 @@ function App() {
     setBacktestSuccess(null)
     setBacktestResult(null)
 
-    // Validate required fields
-    if (!startDate) {
-      setBacktestError('Start date is required for backtesting')
-      return
-    }
-
-    if (!stockSymbol) {
-      setBacktestError('Stock symbol is required for backtesting')
-      return
-    }
-
-    if (!startingAmount || parseFloat(startingAmount) <= 0) {
-      setBacktestError('Starting investment amount must be greater than $0')
+    // Validate backtest settings
+    const { isValid: areParametersValid, error: parameterError } = validateParameters(backtestSettings)
+    if (!areParametersValid) {
+      setBacktestError(parameterError)
       return
     }
 
     setIsRunning(true)
 
     try {
-      const actualEndDate = endDate || new Date().toISOString();
+      const actualEndDate = backtestSettings.endDate || new Date().toISOString();
 
       console.log('Starting Backtest:', {
-        symbol: stockSymbol.toUpperCase(),
-        startDate,
+        symbol: backtestSettings.stockSymbol.toUpperCase(),
+        startDate: backtestSettings.startDate,
         endDate: actualEndDate,
-        startingAmount: `$${parseFloat(startingAmount).toLocaleString()}`,
+        startingAmount: `$${parseFloat(backtestSettings.startingAmount).toLocaleString()}`,
         codeLength: code.length
       })
 
@@ -163,15 +164,17 @@ function App() {
       // Run the backtest
       const result = await backtest({
         dataProvider: dataProvider.current,
-        symbol: stockSymbol.toUpperCase(),
-        startDate,
+        symbol: backtestSettings.stockSymbol.toUpperCase(),
+        startDate: backtestSettings.startDate,
         endDate: actualEndDate,
-        startingAmount: parseFloat(startingAmount),
+        startingAmount: parseFloat(backtestSettings.startingAmount),
+        barResolutionValue: backtestSettings.barResolutionValue,
+        barResolutionPeriod: backtestSettings.barResolutionPeriod,
         strategy: strategy as (data: StrategyFunctionData) => Promise<StrategyFunctionResult>
       })
 
       setBacktestResult(result)
-      setBacktestSuccess(`Backtest completed successfully for ${stockSymbol.toUpperCase()} from ${startDate} to ${actualEndDate.split('T')[0]}.`)
+      setBacktestSuccess(`Backtest completed successfully for ${backtestSettings.stockSymbol.toUpperCase()} from ${backtestSettings.startDate} to ${actualEndDate.split('T')[0]}.`)
 
       // Save code version only after successful backtest
       saveCodeVersion(code)
@@ -192,20 +195,11 @@ function App() {
     }
   }
 
-  // Get the most recent save time
-  const getLastSaveTime = () => {
-    const times = [codeSaved].filter(Boolean) as Date[]
-    return times.length > 0 ? new Date(Math.max(...times.map(t => t.getTime()))) : null
-  }
+  // Removed unused function: getLastSaveTime
 
   const { isValid: isDataProviderConfigured } = dataProvider.current.isConfigured;
   const { isValid: isCodeValid } = validateCode(code)
-  const { isValid: areParametersValid, error: parameterError } = validateParameters(
-    startDate,
-    stockSymbol,
-    startingAmount,
-    endDate
-  )
+  const { isValid: areParametersValid, error: parameterError } = validateParameters(backtestSettings)
 
   return (
     <div className="min-h-screen p-6">
@@ -225,14 +219,8 @@ function App() {
           {/* Backtest Parameters Section */}
           <CollapseableBox title="Backtest Parameters" saveState={true} saveStateKey={"BACKTEST_PARAMETERS_BOX"}>
             <BacktestParameters
-              stockSymbol={stockSymbol}
-              startingAmount={startingAmount}
-              startDate={startDate}
-              endDate={endDate}
-              onStockSymbolChange={setStockSymbol}
-              onStartingAmountChange={setStartingAmount}
-              onStartDateChange={setStartDate}
-              onEndDateChange={setEndDate}
+              settings={backtestSettings}
+              onSettingsChange={updateBacktestSettings}
               onClearMessages={clearMessages}
               parameterError={parameterError}
             />
@@ -276,7 +264,7 @@ function App() {
               backtestSuccess={backtestSuccess}
               backtestError={backtestError}
               parsedError={parsedError}
-              stockSymbol={stockSymbol}
+              stockSymbol={backtestSettings.stockSymbol}
               expandedMetaRows={expandedMetaRows}
               onToggleMetaExpansion={toggleMetaExpansion}
               onExpandAllMeta={expandAllMeta}

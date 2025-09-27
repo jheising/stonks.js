@@ -29,8 +29,8 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   onExpandAllMeta,
   onCollapseAllMeta,
   // onClearSuccess,
-  onClearError,
-  onClearResult
+  onClearError
+  // onClearResult - removed unused parameter
 }) => {
   const handleDownloadCSV = () => {
     if (backtestResult) {

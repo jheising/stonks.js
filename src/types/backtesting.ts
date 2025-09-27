@@ -42,3 +42,20 @@ export interface BacktestResult {
   portfolioData: PortfolioData;
   history: Array<StrategyHistory>;
 }
+
+export interface BacktestMarketDataProps {
+  symbol: string;
+  startDate: string;
+  endDate?: string;
+  barResolutionValue: string;
+  barResolutionPeriod: string;
+}
+
+export interface BacktestSettings {
+  stockSymbol: string;
+  startingAmount: string;
+  startDate: string;
+  endDate: string;
+  barResolutionValue: string;
+  barResolutionPeriod: string;
+}

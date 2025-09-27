@@ -1,10 +1,8 @@
+import type { BacktestSettings } from '../types/backtesting'
+
 // Validate backtest parameters
-export const validateParameters = (
-  startDate: string,
-  stockSymbol: string,
-  startingAmount: string,
-  endDate?: string
-) => {
+export const validateParameters = (settings: BacktestSettings) => {
+  const { startDate, stockSymbol, startingAmount, endDate } = settings
   if (!startDate) {
     return { isValid: false, error: 'Start date is required' }
   }
