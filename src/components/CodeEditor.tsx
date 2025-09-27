@@ -169,6 +169,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
               <li><code className="bg-tuna-600 px-1 rounded">data.nextBar</code> - Next price bar (for reference)</li>
               <li><code className="bg-tuna-600 px-1 rounded">data.currentPortfolio</code> - Portfolio state (shares, cash, value)</li>
               <li><code className="bg-tuna-600 px-1 rounded">data.dayNumber</code> - Current day number (0-based)</li>
+              <li><code className="bg-tuna-600 px-1 rounded">data.scratchpad</code> - Persistent storage for custom data between days</li>
             </ul>
             <p><strong>Return Object:</strong> Use the <code className="bg-tuna-600 px-1 rounded">result</code> object to make trades:</p>
             <ul className="list-disc list-inside ml-4 space-y-1">
@@ -176,9 +177,23 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
               <li><code className="bg-tuna-600 px-1 rounded">result.price = data.currentBar.close</code> - Execution price (will use next next bar open price if not set)</li>
               <li><code className="bg-tuna-600 px-1 rounded">result.meta = {'{reason: "RSI oversold"}'}</code> - Strategy metadata</li>
             </ul>
+            <p><strong>Scratchpad Usage:</strong> Store and retrieve custom data across trading days:</p>
+            <ul className="list-disc list-inside ml-4 space-y-1">
+              <li><code className="bg-tuna-600 px-1 rounded">data.scratchpad.myValue = 42</code> - Store any data (numbers, objects, arrays)</li>
+              <li><code className="bg-tuna-600 px-1 rounded">const stored = data.scratchpad.myValue || 0</code> - Retrieve with fallback</li>
+              <li><code className="bg-tuna-600 px-1 rounded">data.scratchpad.prices = data.scratchpad.prices || []</code> - Initialize arrays</li>
+              <li><code className="bg-tuna-600 px-1 rounded">data.scratchpad.prices.push(data.currentBar.close)</code> - Track price history</li>
+            </ul>
             <p className="text-xs mt-3">
-              <strong>Example:</strong> <code className="bg-tuna-600 px-1 rounded">if (data.dayNumber === 0) result.changeInShares = 100</code> - Buy 100 shares on first bar
+              <strong>Examples:</strong>
             </p>
+            <div className="text-xs bg-tuna-800 p-2 rounded mt-1 font-mono">
+              <div><code>// Simple moving average using scratchpad</code></div>
+              <div><code>data.scratchpad.prices = data.scratchpad.prices || [];</code></div>
+              <div><code>data.scratchpad.prices.push(data.currentBar.close);</code></div>
+              <div><code>if (data.scratchpad.prices.length &gt; 20) data.scratchpad.prices.shift();</code></div>
+              <div><code>const avg = data.scratchpad.prices.reduce((a,b) =&gt; a+b) / data.scratchpad.prices.length;</code></div>
+            </div>
           </div>
         </div>
       )}

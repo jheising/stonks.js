@@ -36,6 +36,7 @@ export interface StrategyFunctionData {
   nextBar: Bar;
   currentPortfolio: PortfolioData;
   history: StrategyHistory[];
+  scratchpad: Record<string, any>;
 }
 
 export interface BacktestResult {

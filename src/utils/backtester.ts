@@ -36,6 +36,8 @@ export async function backtest(props: { dataProvider: StockDataProviderBase, sym
         stockPercentChange: 0
     };
 
+    const scratchpad: Record<string, any> = {};
+
     for (let i = 0; i < bars.length; i++) {
         // Check for cancellation periodically
         if (abortSignal?.aborted) {
@@ -57,7 +59,8 @@ export async function backtest(props: { dataProvider: StockDataProviderBase, sym
             previousBar: previousBar,
             nextBar: nextBar,
             currentPortfolio: portfolioData,
-            history: history
+            history: history,
+            scratchpad
         };
 
         const strategyResult = await props.strategy(strategyData);

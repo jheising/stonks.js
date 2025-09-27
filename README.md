@@ -1,6 +1,10 @@
-# 📈 stonks.js
-
-A modern, web-based backtesting platform for stock trading strategies. Build, test, and analyze your trading algorithms with real market data from Alpaca Markets.
+<div align="center">
+  <img src="public/stonks-logo.png" alt="stonks.js logo" width="96" height="96">
+  
+  # 📈 stonks.js
+  
+  A modern, web-based backtesting platform for stock trading strategies. Build, test, and analyze your trading algorithms with real market data from Alpaca Markets.
+</div>
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)
@@ -572,6 +576,8 @@ This project is licensed under the MIT License.
 - 📧 **Contact**: Create an issue on GitHub for support
 
 ---
+
+**Made with ❤️ by [jheising](https://github.com/jheising)**
 
 **Happy Trading! 📈💰**
 

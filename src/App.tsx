@@ -246,11 +246,17 @@ function App() {
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
-        {/* <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold">
-            Stock Backtesting Tool
-          </h1>
-        </div> */}
+        {/* Header with Logo */}
+        <div className="flex flex-col items-center mb-8">
+          <img 
+            src="/stonks-logo.png" 
+            alt="stonks.js logo" 
+            className="w-32 h-32"
+          />
+          <p className="text-tuna-400 text-center mt-2">
+            Modern web-based backtesting platform
+          </p>
+        </div>
 
         <div className="space-y-6">
           {/* Data Provider Configuration Section */}
@@ -304,7 +310,7 @@ function App() {
           </div>
 
           {/* Results Display */}
-          <CollapseableBox title="Results" saveState={true} saveStateKey={"RESULTS_DISPLAY_BOX"}>
+          {(backtestResult || backtestError || parsedError) && <CollapseableBox title="Results" forceOpen={true}>
             <ResultsDisplay
               backtestResult={backtestResult}
               backtestSuccess={backtestSuccess}
@@ -332,7 +338,7 @@ function App() {
                 setCurrentPage(1) // Reset to first page when page size changes
               }}
             />
-          </CollapseableBox>
+          </CollapseableBox>}
         </div>
 
         {/* Version Modal */}
@@ -341,6 +347,21 @@ function App() {
           onClose={() => setShowVersionModal(false)}
           onLoadVersion={loadCodeVersion}
         />
+
+        {/* Attribution Footer */}
+        <div className="mt-12 text-center">
+          <p className="text-sm text-tuna-400">
+            Made with ❤️ by{' '}
+            <a 
+              href="https://github.com/jheising" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-teal-400 hover:text-teal-300 transition-colors"
+            >
+              jheising
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   )
