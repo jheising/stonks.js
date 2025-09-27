@@ -208,13 +208,13 @@ function App() {
   )
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900">
+        {/* <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold">
             Stock Backtesting Tool
           </h1>
-        </div>
+        </div> */}
 
         <div className="space-y-6">
           {/* API Configuration Section */}
@@ -257,7 +257,7 @@ function App() {
             <button
               onClick={handleSubmit}
               disabled={!isCodeValid || !areParametersValid || !isDataProviderConfigured || isRunning}
-              className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2 cursor-pointer"
+              className="px-8 py-3 bg-teal-400 text-tuna-900 uppercase font-semibold rounded-lg shadow-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:bg-tuna-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2 cursor-pointer"
             >
               {isRunning && (
                 <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -270,26 +270,28 @@ function App() {
           </div>
 
           {/* Results Display */}
-          <ResultsDisplay
-            backtestResult={backtestResult}
-            backtestSuccess={backtestSuccess}
-            backtestError={backtestError}
-            parsedError={parsedError}
-            stockSymbol={stockSymbol}
-            expandedMetaRows={expandedMetaRows}
-            onToggleMetaExpansion={toggleMetaExpansion}
-            onExpandAllMeta={expandAllMeta}
-            onCollapseAllMeta={collapseAllMeta}
-            onClearSuccess={() => {
-              setBacktestSuccess(null)
-              setBacktestResult(null)
-            }}
-            onClearError={() => {
-              setBacktestError(null)
-              setParsedError(null)
-            }}
-            onClearResult={() => setBacktestResult(null)}
-          />
+          <CollapseableBox title="Results" saveState={true} saveStateKey={"RESULTS_DISPLAY_BOX"}>
+            <ResultsDisplay
+              backtestResult={backtestResult}
+              backtestSuccess={backtestSuccess}
+              backtestError={backtestError}
+              parsedError={parsedError}
+              stockSymbol={stockSymbol}
+              expandedMetaRows={expandedMetaRows}
+              onToggleMetaExpansion={toggleMetaExpansion}
+              onExpandAllMeta={expandAllMeta}
+              onCollapseAllMeta={collapseAllMeta}
+              onClearSuccess={() => {
+                setBacktestSuccess(null)
+                setBacktestResult(null)
+              }}
+              onClearError={() => {
+                setBacktestError(null)
+                setParsedError(null)
+              }}
+              onClearResult={() => setBacktestResult(null)}
+            />
+          </CollapseableBox>
         </div>
 
         {/* Version Modal */}

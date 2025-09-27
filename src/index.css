@@ -1,5 +1,25 @@
 @import "tailwindcss";
 
+@theme {
+  --color-tuna-50: #f6f6f9;
+  --color-tuna-100: #ededf1;
+  --color-tuna-200: #d7d8e0;
+  --color-tuna-300: #b4b7c5;
+  --color-tuna-400: #8b8fa5;
+  --color-tuna-500: #6d718a;
+  --color-tuna-600: #575a72;
+  --color-tuna-700: #47495d;
+  --color-tuna-800: #3e404e;
+  --color-tuna-900: #32333e;
+  --color-tuna-950: #24242d;
+}
+
+/* Apply Roboto Mono globally */
+body {
+  font-family: 'Barlow', sans-serif;
+  @apply text-tuna-100 bg-tuna-900 antialiased;
+}
+
 /* Monaco Editor Error Highlighting */
 .monaco-error-highlight {
   background-color: rgba(255, 0, 0, 0.1) !important;

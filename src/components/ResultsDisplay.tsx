@@ -42,18 +42,18 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     <>
       {/* Success Display */}
       {/* {backtestSuccess && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-teal-50 border-teal-200 rounded-lg p-4">
           <div className="flex items-center">
-            <svg className="w-5 h-5 text-green-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-5 h-5 text-teal-300 mr-3" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
             <div>
-              <h3 className="text-sm font-medium text-green-800">Backtest Complete</h3>
-              <p className="text-sm text-green-700 mt-1">{backtestSuccess}</p>
+              <h3 className="text-sm font-medium text-teal-800">Backtest Complete</h3>
+              <p className="text-sm text-teal-700 mt-1">{backtestSuccess}</p>
             </div>
             <button
               onClick={onClearSuccess}
-              className="ml-auto text-green-400 hover:text-green-600 cursor-pointer"
+              className="ml-auto text-teal-300 hover:text-teal-300 cursor-pointer"
             >
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -65,62 +65,50 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
       {/* Results Section */}
       {backtestResult && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-4">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-blue-800">Backtest Results</h3>
-            <button
-              onClick={onClearResult}
-              className="text-blue-400 hover:text-blue-600 cursor-pointer"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
-          </div>
-
+        <div>
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-          <div className="bg-white rounded-lg p-4 border border-blue-100">
-              <div className="text-sm text-gray-500 mb-1">Starting Total Portfolio Value</div>
-              <div className="text-xl font-semibold text-gray-900">
+            <div className="bg-tuna-600 rounded-lg p-4 ">
+              <div className="text-sm text-tuna-300 mb-1 uppercase font-semibold">Starting Total Portfolio Value</div>
+              <div className="text-2xl font-semibold tracking-wide">
                 ${backtestResult.portfolioData.startingCash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
 
-            <div className="bg-white rounded-lg p-4 border border-blue-100">
-              <div className="text-sm text-gray-500 mb-1">Final Total Portfolio Value</div>
-              <div className="text-2xl font-bold text-gray-900">
+            <div className="bg-tuna-600 rounded-lg p-4 ">
+              <div className="text-sm text-tuna-300 mb-1 uppercase font-semibold">Final Total Portfolio Value</div>
+              <div className="text-2xl font-semibold tracking-wide">
                 ${backtestResult.portfolioData.portfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
 
-            <div className="bg-white rounded-lg p-4 border border-blue-100">
-              <div className="text-sm text-gray-500 mb-1">Market Performance</div>
-              <div className={`text-2xl font-bold ${backtestResult.portfolioData.stockPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className="bg-tuna-600 rounded-lg p-4 ">
+              <div className="text-sm text-tuna-300 mb-1 uppercase font-semibold">Market Performance</div>
+              <div className={`text-2xl font-semibold tracking-wide ${backtestResult.portfolioData.stockPercentChange >= 0 ? 'text-teal-300' : 'text-pink-300'}`}>
                 {backtestResult.portfolioData.stockPercentChange >= 0 ? '+' : ''}{backtestResult.portfolioData.stockPercentChange.toFixed(2)}%
               </div>
             </div>
 
-            <div className="bg-white rounded-lg p-4 border border-blue-100">
-              <div className="text-sm text-gray-500 mb-1">Strategy Performance</div>
-              <div className={`text-2xl font-bold ${backtestResult.portfolioData.portfolioPercentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className="bg-tuna-600 rounded-lg p-4 ">
+              <div className="text-sm text-tuna-300 mb-1 uppercase font-semibold">Strategy Performance</div>
+              <div className={`text-2xl font-semibold tracking-wide ${backtestResult.portfolioData.portfolioPercentChange >= 0 ? 'text-teal-300' : 'text-pink-300'}`}>
                 {backtestResult.portfolioData.portfolioPercentChange >= 0 ? '+' : ''}{backtestResult.portfolioData.portfolioPercentChange.toFixed(2)}%
               </div>
             </div>
           </div>
 
           {/* Detailed Results Table */}
-          <div className="mt-6 bg-white rounded-lg border border-blue-100 overflow-hidden">
-            <div className="px-4 py-3 bg-blue-50 border-b border-blue-100">
+          <div className="mt-6 bg-tuna-700 rounded-lg  overflow-hidden">
+            <div className="px-4 py-3 border-b ">
               <div className="flex justify-between items-center">
                 <div>
-                  <h4 className="text-md font-semibold text-blue-800">Detailed Backtest Data</h4>
-                  <p className="text-sm text-blue-600 mt-1">Bar data and strategy decisions for each time period</p>
+                  <h4 className="text-md font-semibold">Detailed Backtest Data</h4>
+                  <p className="text-sm text-tuna-400 mt-1">Bar data and strategy decisions for each time period</p>
                 </div>
                 <div className="flex space-x-2">
                   <button
                     onClick={handleDownloadCSV}
-                    className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center space-x-1 cursor-pointer"
+                    className="px-3 py-1 text-xs bg-teal-400 text-tuna-900 rounded hover:bg-teal-700 transition-colors flex items-center space-x-1 cursor-pointer"
                     type="button"
                   >
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -130,14 +118,14 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                   </button>
                   <button
                     onClick={onExpandAllMeta}
-                    className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors cursor-pointer"
+                    className="px-3 py-1 text-xs bg-teal-400 text-tuna-900 rounded hover:bg-teal-700 transition-colors cursor-pointer"
                     type="button"
                   >
                     Expand All Meta
                   </button>
                   <button
                     onClick={onCollapseAllMeta}
-                    className="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors cursor-pointer"
+                    className="px-3 py-1 text-xs bg-tuna-600 rounded hover:bg-tuna-700 transition-colors cursor-pointer"
                     type="button"
                   >
                     Collapse All Meta
@@ -146,87 +134,87 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
               </div>
             </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50 sticky top-0">
+              <table className="min-w-full divide-y divide-tuna-400">
+                <thead className="bg-tuna-600 sticky top-0">
                   <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Symbol</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Open</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">High</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Low</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Close</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Volume</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Shares Owned</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Buy/Sell Shares</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Buy/Sell Price</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Cash</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Portfolio Value</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Meta</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold  uppercase tracking-wider">Date</th>
+                    <th className="px-3 py-2 text-left text-xs font-bold  uppercase tracking-wider">Symbol</th>
+                    <th className="px-3 py-2 text-xs font-bold  uppercase tracking-wider text-right">Open</th>
+                    <th className="px-3 py-2 text-xs font-bold  uppercase tracking-wider text-right">High</th>
+                    <th className="px-3 py-2 text-xs font-bold  uppercase tracking-wider text-right">Low</th>
+                    <th className="px-3 py-2 text-xs font-bold  uppercase tracking-wider text-right">Close</th>
+                    <th className="px-3 py-2 text-xs font-bold  uppercase tracking-wider text-right">Volume</th>
+                    <th className="px-3 py-2 text-xs font-bold  uppercase tracking-wider text-right">Shares Owned</th>
+                    <th className="px-3 py-2 text-xs font-bold  uppercase tracking-wider text-right">Buy/Sell Shares</th>
+                    <th className="px-3 py-2 text-xs font-bold  uppercase tracking-wider text-right">Buy/Sell Price</th>
+                    <th className="px-3 py-2 text-xs font-bold  uppercase tracking-wider text-right">Cash</th>
+                    <th className="px-3 py-2 text-xs font-bold  uppercase tracking-wider text-right">Portfolio Value</th>
+                    <th className="px-3 py-2 text-xs font-bold  uppercase tracking-wider text-center">Meta</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-tuna-700 divide-y divide-tuna-600">
                   {backtestResult.history.map((historyItem, index) => {
                     const bar = historyItem.bar;
                     const strategyResult = historyItem.strategyResult;
                     const portfolioSnapshot = historyItem.portfolioSnapshot;
                     return (
                       <React.Fragment key={index}>
-                        <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                        <tr key={index} className={index % 2 === 0 ? 'bg-tuna-700' : 'bg-tuna-800'}>
+                          <td className="px-3 py-2 whitespace-nowrap font-medium text-sm">
                             {new Date(bar.timestamp).toLocaleDateString()}
                           </td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                           {stockSymbol}
+                          <td className="px-3 py-2 whitespace-nowrap font-medium text-sm">
+                            {stockSymbol}
                           </td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                          <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-right tracking-wider">
                             ${bar.open.toFixed(2)}
                           </td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                          <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-right tracking-wider">
                             ${bar.high.toFixed(2)}
                           </td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                          <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-right tracking-wider">
                             ${bar.low.toFixed(2)}
                           </td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                          <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-right tracking-wider">
                             ${bar.close.toFixed(2)}
                           </td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                          <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-right tracking-wider">
                             {bar.volume.toLocaleString()}
                           </td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium text-right">
+                          <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-right tracking-wider">
                             {portfolioSnapshot.sharesOwned.toLocaleString()}
                           </td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                          <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-right tracking-wider">
                             {strategyResult?.changeInShares !== undefined && strategyResult.changeInShares !== 0 ? (
-                              <span className={strategyResult.changeInShares > 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
+                              <span className={strategyResult.changeInShares > 0 ? 'text-teal-300' : 'text-pink-300'}>
                                 {strategyResult.changeInShares > 0 ? '+' : ''}{strategyResult.changeInShares}
                               </span>
                             ) : (
-                              <span className="text-gray-400">-</span>
+                              <span className="text-tuna-400">-</span>
                             )}
                           </td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
-                            {strategyResult?.price !== undefined ? `$${strategyResult.price.toFixed(2)}` : '-'}
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-right font-medium tracking-wider">
+                            {strategyResult?.price !== undefined ? `$${strategyResult.price.toFixed(2)}` : <span className="text-tuna-400">-</span>}
                           </td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium text-right">
-                            <span className="text-gray-900">${portfolioSnapshot.availableCash.toFixed(2)}</span>
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-right font-medium tracking-wider">
+                            <span>${portfolioSnapshot.availableCash.toFixed(2)}</span>
                           </td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium text-right">
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-right font-medium tracking-wider">
                             {(() => {
                               // Get previous portfolio value for comparison
                               const previousPortfolioValue = index > 0 ? backtestResult.history[index - 1].portfolioSnapshot.portfolioValue : portfolioSnapshot.portfolioValue;
                               const currentPortfolioValue = portfolioSnapshot.portfolioValue;
-                              
+
                               // Determine color based on change
-                              let colorClass = 'text-gray-900'; // default
+                              let colorClass = ''; // default
                               if (index > 0) { // only apply color from second row onwards
                                 if (currentPortfolioValue > previousPortfolioValue) {
-                                  colorClass = 'text-green-600';
+                                  colorClass = 'text-teal-300';
                                 } else if (currentPortfolioValue < previousPortfolioValue) {
-                                  colorClass = 'text-red-600';
+                                  colorClass = 'text-pink-300';
                                 }
                               }
-                              
+
                               return (
                                 <span className={colorClass}>
                                   ${portfolioSnapshot.portfolioValue.toFixed(2)}
@@ -234,26 +222,26 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                               );
                             })()}
                           </td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
+                          <td className="px-3 py-2 whitespace-nowrap text-sm text-center">
                             {strategyResult?.meta && Object.keys(strategyResult.meta).length > 0 ? (
                               <button
                                 onClick={(e) => onToggleMetaExpansion(index, e)}
-                                className="text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
+                                className="text-teal-300 hover:text-teal-800 font-medium cursor-pointer"
                                 type="button"
                               >
                                 {expandedMetaRows.has(index) ? '−' : '+'}
                               </button>
                             ) : (
-                              <span className="text-gray-400">-</span>
+                              <span className="text-tuna-400">-</span>
                             )}
                           </td>
                         </tr>
                         {expandedMetaRows.has(index) && strategyResult?.meta && (
-                          <tr className="bg-blue-50">
+                          <tr>
                             <td colSpan={12} className="px-3 py-2">
-                              <div className="bg-white rounded border p-3">
-                                <h5 className="text-sm font-medium text-gray-700 mb-2">Meta Data:</h5>
-                                <pre className="text-xs text-gray-600 whitespace-pre-wrap bg-gray-50 p-2 rounded">
+                              <div className="p-3">
+                                <h5 className="text-sm font-medium mb-2">Meta Data:</h5>
+                                <pre className="text-xs whitespace-pre-wrap p-2">
                                   {JSON.stringify(strategyResult.meta, null, 2)}
                                 </pre>
                               </div>
@@ -272,38 +260,38 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
       {/* Error Display */}
       {backtestError && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-pink-50 border-pink-200 rounded-lg p-4">
           <div className="flex items-start">
-            <svg className="w-5 h-5 text-red-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-5 h-5 text-pink-300 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L10 11.414l1.293-1.293a1 1 0 001.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
             <div className="flex-grow">
-              <h3 className="text-sm font-medium text-red-800">
+              <h3 className="text-sm font-medium text-pink-800">
                 Strategy Error
                 {parsedError?.errorType && (
-                  <span className="ml-2 px-2 py-0.5 text-xs bg-red-100 text-red-600 rounded">
+                  <span className="ml-2 px-2 py-0.5 text-xs bg-pink-100 text-pink-300 rounded">
                     {parsedError.errorType}
                   </span>
                 )}
               </h3>
-              
+
               {/* Enhanced error message */}
               <div className="mt-2">
                 {parsedError?.lineNumber ? (
-                  <p className="text-sm text-red-700">
+                  <p className="text-sm text-pink-700">
                     <span className="font-semibold">Line {parsedError.lineNumber}</span>
                     {parsedError.columnNumber && <span>, Column {parsedError.columnNumber}</span>}: {parsedError.message}
                   </p>
                 ) : (
-                  <p className="text-sm text-red-700">{backtestError}</p>
+                  <p className="text-sm text-pink-700">{backtestError}</p>
                 )}
               </div>
 
               {/* Code context */}
               {parsedError?.codeContext && (
                 <div className="mt-3">
-                  <h4 className="text-xs font-medium text-red-800 mb-2">Code Context:</h4>
-                  <pre className="text-xs text-red-700 bg-red-100 p-2 rounded overflow-x-auto whitespace-pre">
+                  <h4 className="text-xs font-medium text-pink-800 mb-2">Code Context:</h4>
+                  <pre className="text-xs text-pink-700 bg-pink-100 p-2 rounded overflow-x-auto whitespace-pre">
                     {parsedError.codeContext}
                   </pre>
                 </div>
@@ -311,7 +299,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
             </div>
             <button
               onClick={onClearError}
-              className="ml-3 text-red-400 hover:text-red-600 cursor-pointer flex-shrink-0"
+              className="ml-3 text-pink-300 hover:text-pink-300 cursor-pointer flex-shrink-0"
             >
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />

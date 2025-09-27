@@ -30,9 +30,9 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <div className="text-xs text-gray-500">
+        <div className="text-xs text-tuna-500">
           {isReady && (
-            <span className="flex items-center space-x-1 text-green-600 bg-green-50 px-2 py-1 rounded-full">
+            <span className="flex items-center space-x-1 text-tuna-900 bg-teal-400 px-2 py-1 rounded-full">
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
@@ -53,9 +53,9 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         {/* Stock Symbol */}
         <div>
-          <label htmlFor="stockSymbol" className="block text-sm font-medium text-gray-700 mb-2">
-            Stock Symbol <span className="text-red-500">*</span>
-            {stockSymbol && <span className="text-green-600 text-xs ml-2">✓ Saved</span>}
+          <label htmlFor="stockSymbol" className="block text-sm font-medium mb-2">
+            Stock Symbol <span className="text-pink-500">*</span>
+            {stockSymbol && <span className="text-teal-400 text-xs ml-2">✓ Saved</span>}
           </label>
           <input
             type="text"
@@ -65,7 +65,7 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
               onStockSymbolChange(e.target.value.toUpperCase())
               onClearMessages()
             }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-tuna-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
             placeholder="e.g., AAPL"
             maxLength={5}
             pattern="[A-Z]{1,5}"
@@ -75,13 +75,13 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
 
         {/* Starting Amount */}
         <div>
-          <label htmlFor="startingAmount" className="block text-sm font-medium text-gray-700 mb-2">
-            Starting Amount <span className="text-red-500">*</span>
-            {startingAmount && parseFloat(startingAmount) > 0 && <span className="text-green-600 text-xs ml-2">✓ Saved</span>}
+          <label htmlFor="startingAmount" className="block text-sm font-medium  mb-2">
+            Starting Amount <span className="text-pink-500">*</span>
+            {startingAmount && parseFloat(startingAmount) > 0 && <span className="text-teal-400 text-xs ml-2">✓ Saved</span>}
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 sm:text-sm">$</span>
+              <span className="sm:text-sm">$</span>
             </div>
             <input
               type="number"
@@ -91,7 +91,7 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
                 onStartingAmountChange(e.target.value)
                 onClearMessages()
               }}
-              className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-7 pr-3 py-2 border border-tuna-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
               placeholder="10000"
               min="0.01"
               max="1000000"
@@ -103,9 +103,9 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
 
         {/* Start Date */}
         <div>
-          <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
-            Start Date <span className="text-red-500">*</span>
-            {startDate && <span className="text-green-600 text-xs ml-2">✓ Saved</span>}
+          <label htmlFor="startDate" className="block text-sm font-medium  mb-2">
+            Start Date <span className="text-pink-500">*</span>
+            {startDate && <span className="text-teal-400 text-xs ml-2">✓ Saved</span>}
           </label>
           <input
             type="date"
@@ -116,16 +116,16 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
               onClearMessages()
             }}
             max={new Date().toISOString().split('T')[0]}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-tuna-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
             required
           />
         </div>
 
         {/* End Date */}
         <div>
-          <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
-            End Date <span className="text-gray-400 text-xs">(optional)</span>
-            {endDate && <span className="text-green-600 text-xs ml-2">✓ Saved</span>}
+          <label htmlFor="endDate" className="block text-sm font-medium  mb-2">
+            End Date <span className="text-tuna-400 text-xs">(optional)</span>
+            {endDate && <span className="text-teal-400 text-xs ml-2">✓ Saved</span>}
           </label>
           <input
             type="date"
@@ -136,7 +136,7 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
               onClearMessages()
             }}
             max={new Date().toISOString().split('T')[0]}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-tuna-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
           />
           {startDate && endDate && new Date(endDate) < new Date(startDate) && (
             <p className="mt-1 text-xs text-amber-600">End date should be after start date</p>
@@ -145,12 +145,12 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({
       </div>
 
       {parameterError && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-red-700 text-sm">{parameterError}</p>
+        <div className="mb-4 p-3 bg-pink-50 border border-pink-200 rounded-md">
+          <p className="text-pink-700 text-sm">{parameterError}</p>
         </div>
       )}
 
-      <ul className="text-xs text-gray-500 list-disc list-inside">
+      <ul className="text-xs list-disc list-inside text-tuna-500">
         <li>
           Dates are considered to be in the US Eastern Timezone.
         </li>
