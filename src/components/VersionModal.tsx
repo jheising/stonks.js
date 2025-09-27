@@ -24,7 +24,7 @@ export const VersionModal: React.FC<VersionModalProps> = ({
           <h3 className="text-lg font-semibold">Code Versions</h3>
           <button
             onClick={onClose}
-            className=" hover:text-tuna-600 cursor-pointer"
+            className=" hover:text-tuna-600 "
             type="button"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -53,7 +53,7 @@ export const VersionModal: React.FC<VersionModalProps> = ({
                     </div>
                     <button
                       onClick={() => onLoadVersion(version)}
-                      className="px-3 py-1 text-sm bg-teal-400 text-tuna-900 rounded hover:bg-teal-700 transition-colors cursor-pointer"
+                      className="px-3 py-1 text-sm bg-teal-400 text-tuna-900 rounded hover:bg-teal-700 transition-colors "
                       type="button"
                     >
                       Load

@@ -2,6 +2,8 @@ import React from 'react'
 import type { BacktestResult } from '../types/backtesting'
 import type { ParsedError } from '../utils/errorParser'
 import { downloadCSV } from '../utils/csvExport'
+import { Pagination } from './Pagination'
+import { DateTime } from 'luxon'
 
 interface ResultsDisplayProps {
   backtestResult: BacktestResult | null
@@ -16,6 +18,11 @@ interface ResultsDisplayProps {
   onClearSuccess: () => void
   onClearError: () => void
   onClearResult: () => void
+  // Pagination props
+  currentPage: number
+  pageSize: number
+  onPageChange: (page: number) => void
+  onPageSizeChange: (size: number) => void
 }
 
 export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
@@ -29,14 +36,24 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   onExpandAllMeta,
   onCollapseAllMeta,
   // onClearSuccess,
-  onClearError
+  onClearError,
   // onClearResult - removed unused parameter
+  currentPage,
+  pageSize,
+  onPageChange,
+  onPageSizeChange
 }) => {
   const handleDownloadCSV = () => {
     if (backtestResult) {
       downloadCSV(backtestResult, stockSymbol)
     }
   }
+
+  // Calculate paginated data
+  const totalItems = backtestResult?.history?.length || 0
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const paginatedHistory = backtestResult?.history?.slice(startIndex, endIndex) || []
 
   return (
     <>
@@ -53,7 +70,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
             </div>
             <button
               onClick={onClearSuccess}
-              className="ml-auto text-teal-300 hover:text-teal-300 cursor-pointer"
+              className="ml-auto text-teal-300 hover:text-teal-300 "
             >
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -99,7 +116,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
           {/* Detailed Results Table */}
           <div className="mt-6 bg-tuna-700 rounded-lg  overflow-hidden">
-            <div className="px-4 py-3 border-b ">
+            <div className="px-4 py-3 border-b">
               <div className="flex justify-between items-center">
                 <div>
                   <h4 className="text-md font-semibold">Detailed Backtest Data</h4>
@@ -108,7 +125,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                 <div className="flex space-x-2">
                   <button
                     onClick={handleDownloadCSV}
-                    className="px-3 py-1 text-xs bg-teal-400 text-tuna-900 rounded hover:bg-teal-700 transition-colors flex items-center space-x-1 cursor-pointer"
+                    className="px-3 py-1 text-xs bg-teal-400 text-tuna-900 rounded hover:bg-teal-700 transition-colors flex items-center space-x-1 "
                     type="button"
                   >
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -118,14 +135,14 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                   </button>
                   <button
                     onClick={onExpandAllMeta}
-                    className="px-3 py-1 text-xs bg-teal-400 text-tuna-900 rounded hover:bg-teal-700 transition-colors cursor-pointer"
+                    className="px-3 py-1 text-xs bg-teal-400 text-tuna-900 rounded hover:bg-teal-700 transition-colors "
                     type="button"
                   >
                     Expand All Meta
                   </button>
                   <button
                     onClick={onCollapseAllMeta}
-                    className="px-3 py-1 text-xs bg-tuna-600 rounded hover:bg-tuna-700 transition-colors cursor-pointer"
+                    className="px-3 py-1 text-xs bg-tuna-600 rounded hover:bg-tuna-700 transition-colors "
                     type="button"
                   >
                     Collapse All Meta
@@ -152,16 +169,17 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                     <th className="px-3 py-2 text-xs font-bold  uppercase tracking-wider text-center">Meta</th>
                   </tr>
                 </thead>
-                <tbody className="bg-tuna-700 divide-y divide-tuna-600">
-                  {backtestResult.history.map((historyItem, index) => {
+                <tbody className="divide-y divide-tuna-600">
+                  {paginatedHistory.map((historyItem, index) => {
+                    const globalIndex = startIndex + index // Global index for meta expansion
                     const bar = historyItem.bar;
                     const strategyResult = historyItem.strategyResult;
                     const portfolioSnapshot = historyItem.portfolioSnapshot;
                     return (
-                      <React.Fragment key={index}>
-                        <tr key={index} className={index % 2 === 0 ? 'bg-tuna-700' : 'bg-tuna-800'}>
-                          <td className="px-3 py-2 whitespace-nowrap font-medium text-sm">
-                            {new Date(bar.timestamp).toLocaleDateString()}
+                      <React.Fragment key={globalIndex}>
+                        <tr key={globalIndex}>
+                          <td className="px-3 py-2 whitespace-nowrap font-medium text-sm tracking-tight">
+                            {DateTime.fromISO(bar.timestamp).toLocaleString(DateTime.DATETIME_SHORT)}
                           </td>
                           <td className="px-3 py-2 whitespace-nowrap font-medium text-sm">
                             {stockSymbol}
@@ -225,18 +243,18 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                           <td className="px-3 py-2 whitespace-nowrap text-sm text-center">
                             {strategyResult?.meta && Object.keys(strategyResult.meta).length > 0 ? (
                               <button
-                                onClick={(e) => onToggleMetaExpansion(index, e)}
-                                className="text-teal-300 hover:text-teal-800 font-medium cursor-pointer"
+                                onClick={(e) => onToggleMetaExpansion(globalIndex, e)}
+                                className="text-teal-300 hover:text-teal-800 font-medium "
                                 type="button"
                               >
-                                {expandedMetaRows.has(index) ? '−' : '+'}
+                                {expandedMetaRows.has(globalIndex) ? '−' : '+'}
                               </button>
                             ) : (
                               <span className="text-tuna-400">-</span>
                             )}
                           </td>
                         </tr>
-                        {expandedMetaRows.has(index) && strategyResult?.meta && (
+                        {expandedMetaRows.has(globalIndex) && strategyResult?.meta && (
                           <tr>
                             <td colSpan={12} className="px-3 py-2">
                               <div className="p-3">
@@ -254,6 +272,15 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                 </tbody>
               </table>
             </div>
+            
+            {/* Pagination */}
+            <Pagination
+              currentPage={currentPage}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+            />
           </div>
         </div>
       )}
@@ -299,7 +326,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
             </div>
             <button
               onClick={onClearError}
-              className="ml-3 text-pink-300 hover:text-pink-300 cursor-pointer flex-shrink-0"
+              className="ml-3 text-pink-300 hover:text-pink-300  flex-shrink-0"
             >
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />

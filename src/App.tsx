@@ -51,6 +51,10 @@ function App() {
   const [expandedMetaRows, setExpandedMetaRows] = useState<Set<number>>(new Set())
   const [showVersionModal, setShowVersionModal] = useState(false)
   const [showInstructions, setShowInstructions] = useLocalStorage(STORAGE_KEYS.SHOW_INSTRUCTIONS, true)
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(50)
 
   // Clear messages when form inputs change
   const clearMessages = () => {
@@ -175,6 +179,9 @@ function App() {
 
       setBacktestResult(result)
       setBacktestSuccess(`Backtest completed successfully for ${backtestSettings.stockSymbol.toUpperCase()} from ${backtestSettings.startDate} to ${actualEndDate.split('T')[0]}.`)
+      
+      // Reset pagination to first page for new results
+      setCurrentPage(1)
 
       // Save code version only after successful backtest
       saveCodeVersion(code)
@@ -245,7 +252,7 @@ function App() {
             <button
               onClick={handleSubmit}
               disabled={!isCodeValid || !areParametersValid || !isDataProviderConfigured || isRunning}
-              className="px-8 py-3 bg-teal-400 text-tuna-900 uppercase font-semibold rounded-lg shadow-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:bg-tuna-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2 cursor-pointer"
+              className="px-8 py-3 bg-teal-400 text-tuna-900 uppercase font-semibold rounded-lg shadow-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:bg-tuna-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2 "
             >
               {isRunning && (
                 <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -278,6 +285,13 @@ function App() {
                 setParsedError(null)
               }}
               onClearResult={() => setBacktestResult(null)}
+              currentPage={currentPage}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={(size: number) => {
+                setPageSize(size)
+                setCurrentPage(1) // Reset to first page when page size changes
+              }}
             />
           </CollapseableBox>
         </div>

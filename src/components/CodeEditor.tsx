@@ -115,14 +115,14 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
         <div className="flex items-center space-x-4">
           <button
             onClick={onToggleInstructions}
-            className="px-3 py-1 text-sm bg-tuna-100 text-tuna-700 rounded-md hover:bg-tuna-200 transition-colors cursor-pointer"
+            className="px-3 py-1 text-sm bg-tuna-100 text-tuna-700 rounded-md hover:bg-tuna-200 transition-colors "
             type="button"
           >
             {showInstructions ? 'Hide' : 'Show'} Instructions
           </button>
           <button
             onClick={onShowVersionModal}
-            className="px-3 py-1 text-sm bg-teal-400 text-tuna-900 rounded-md hover:bg-teal-700 transition-colors cursor-pointer"
+            className="px-3 py-1 text-sm bg-teal-400 text-tuna-900 rounded-md hover:bg-teal-700 transition-colors "
             type="button"
           >
             Load Version
