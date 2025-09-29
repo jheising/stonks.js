@@ -71,13 +71,7 @@ function App() {
 
   // Abort controller for cancelling running backtests
   const abortControllerRef = useRef<AbortController | null>(null)
-  const [expandedMetaRows, setExpandedMetaRows] = useState<Set<number>>(new Set())
   const [showVersionModal, setShowVersionModal] = useState(false)
-  const [showInstructions, setShowInstructions] = useLocalStorage(STORAGE_KEYS.SHOW_INSTRUCTIONS, true)
-
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(50)
 
   // Clear messages when form inputs change (but keep results visible)
   const clearMessages = () => {
@@ -85,40 +79,8 @@ function App() {
       setBacktestError(null)
       setParsedError(null)
       setBacktestSuccess(null)
-      // Note: We intentionally keep backtestResult and expandedMetaRows so the table stays visible
+      // Note: We intentionally keep backtestResult so the table stays visible
     }
-  }
-
-  // Toggle meta data expansion for a specific row
-  const toggleMetaExpansion = (rowIndex: number, event: React.MouseEvent) => {
-    event.preventDefault()
-    event.stopPropagation()
-
-    const newExpanded = new Set(expandedMetaRows)
-    if (newExpanded.has(rowIndex)) {
-      newExpanded.delete(rowIndex)
-    } else {
-      newExpanded.add(rowIndex)
-    }
-    setExpandedMetaRows(newExpanded)
-  }
-
-  // Expand all meta fields that have data
-  const expandAllMeta = () => {
-    if (!backtestResult) return
-
-    const rowsWithMeta = new Set<number>()
-    backtestResult.history.forEach((historyItem, index) => {
-      if (historyItem.strategyResult?.meta && Object.keys(historyItem.strategyResult.meta).length > 0) {
-        rowsWithMeta.add(index)
-      }
-    })
-    setExpandedMetaRows(rowsWithMeta)
-  }
-
-  // Collapse all meta fields
-  const collapseAllMeta = () => {
-    setExpandedMetaRows(new Set())
   }
 
   // Load a specific code version
@@ -210,9 +172,6 @@ function App() {
       setBacktestResult(result)
       setBacktestSuccess(`Backtest completed successfully for ${backtestSettings.stockSymbol.toUpperCase()} from ${backtestSettings.startDate} to ${actualEndDate.split('T')[0]}.`)
 
-      // Reset pagination to first page for new results
-      setCurrentPage(1)
-
       // Save code version only after successful backtest
       saveCodeVersion(code)
 
@@ -298,8 +257,6 @@ function App() {
             <CodeEditor
               code={code}
               onCodeChange={handleEditorChange}
-              showInstructions={showInstructions}
-              onToggleInstructions={() => setShowInstructions(!showInstructions)}
               onShowVersionModal={() => setShowVersionModal(true)}
               codeSaved={codeSaved}
               isCodeValid={isCodeValid}
@@ -333,25 +290,9 @@ function App() {
               backtestError={backtestError}
               parsedError={parsedError}
               stockSymbol={backtestSettings.stockSymbol}
-              expandedMetaRows={expandedMetaRows}
-              onToggleMetaExpansion={toggleMetaExpansion}
-              onExpandAllMeta={expandAllMeta}
-              onCollapseAllMeta={collapseAllMeta}
-              onClearSuccess={() => {
-                setBacktestSuccess(null)
-                setBacktestResult(null)
-              }}
               onClearError={() => {
                 setBacktestError(null)
                 setParsedError(null)
-              }}
-              onClearResult={() => setBacktestResult(null)}
-              currentPage={currentPage}
-              pageSize={pageSize}
-              onPageChange={setCurrentPage}
-              onPageSizeChange={(size: number) => {
-                setPageSize(size)
-                setCurrentPage(1) // Reset to first page when page size changes
               }}
             />
           </CollapseableBox>}

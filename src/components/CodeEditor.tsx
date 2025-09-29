@@ -3,13 +3,13 @@ import Editor from '@monaco-editor/react'
 import { formatSaveTime } from '../utils/dateFormat'
 import { getCodeEditorTypes } from '../utils/typeExtractor'
 import type { ParsedError } from '../utils/errorParser'
+import { useLocalStorage } from '../hooks/useLocalStorage'
+import { STORAGE_KEYS } from '../constants/storage'
 
 
 interface CodeEditorProps {
   code: string
   onCodeChange: (value: string | undefined) => void
-  showInstructions: boolean
-  onToggleInstructions: () => void
   onShowVersionModal: () => void
   codeSaved: Date | null
   isCodeValid: boolean
@@ -20,14 +20,14 @@ interface CodeEditorProps {
 export const CodeEditor: React.FC<CodeEditorProps> = ({
   code,
   onCodeChange,
-  showInstructions,
-  onToggleInstructions,
   onShowVersionModal,
   codeSaved,
   isCodeValid,
   errorInfo,
   onValidationChange
 }) => {
+  // Internal state management for instructions toggle
+  const [showInstructions, setShowInstructions] = useLocalStorage(STORAGE_KEYS.SHOW_INSTRUCTIONS, true)
   const editorRef = useRef<any>(null)
   const monacoRef = useRef<any>(null)
   const decorationsRef = useRef<any>(null)
@@ -136,7 +136,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-4">
           <button
-            onClick={onToggleInstructions}
+            onClick={() => setShowInstructions(!showInstructions)}
             className="px-3 py-1 text-sm bg-tuna-100 text-tuna-700 rounded-md hover:bg-tuna-200 transition-colors "
             type="button"
           >

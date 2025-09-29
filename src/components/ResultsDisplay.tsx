@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import currency from 'currency.js'
 import type { BacktestResult } from '../types/backtesting'
 import type { ParsedError } from '../utils/errorParser'
@@ -12,18 +12,7 @@ interface ResultsDisplayProps {
   backtestError: string | null
   parsedError: ParsedError | null
   stockSymbol: string
-  expandedMetaRows: Set<number>
-  onToggleMetaExpansion: (rowIndex: number, event: React.MouseEvent) => void
-  onExpandAllMeta: () => void
-  onCollapseAllMeta: () => void
-  onClearSuccess: () => void
   onClearError: () => void
-  onClearResult: () => void
-  // Pagination props
-  currentPage: number
-  pageSize: number
-  onPageChange: (page: number) => void
-  onPageSizeChange: (size: number) => void
 }
 
 export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
@@ -32,18 +21,61 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   backtestError,
   parsedError,
   stockSymbol,
-  expandedMetaRows,
-  onToggleMetaExpansion,
-  onExpandAllMeta,
-  onCollapseAllMeta,
-  // onClearSuccess,
-  onClearError,
-  // onClearResult - removed unused parameter
-  currentPage,
-  pageSize,
-  onPageChange,
-  onPageSizeChange
+  onClearError
 }) => {
+  // Internal state management for pagination and metadata expansion
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(50)
+  const [expandedMetaRows, setExpandedMetaRows] = useState<Set<number>>(new Set())
+
+  // Reset pagination when backtest result changes
+  useEffect(() => {
+    setCurrentPage(1)
+    setExpandedMetaRows(new Set()) // Also reset expanded meta rows for new results
+  }, [backtestResult])
+
+  // Toggle meta data expansion for a specific row
+  const toggleMetaExpansion = (rowIndex: number, event: React.MouseEvent) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const newExpanded = new Set(expandedMetaRows)
+    if (newExpanded.has(rowIndex)) {
+      newExpanded.delete(rowIndex)
+    } else {
+      newExpanded.add(rowIndex)
+    }
+    setExpandedMetaRows(newExpanded)
+  }
+
+  // Expand all meta fields that have data
+  const expandAllMeta = () => {
+    if (!backtestResult) return
+
+    const rowsWithMeta = new Set<number>()
+    backtestResult.history.forEach((historyItem, index) => {
+      if (historyItem.strategyResult?.meta && Object.keys(historyItem.strategyResult.meta).length > 0) {
+        rowsWithMeta.add(index)
+      }
+    })
+    setExpandedMetaRows(rowsWithMeta)
+  }
+
+  // Collapse all meta fields
+  const collapseAllMeta = () => {
+    setExpandedMetaRows(new Set())
+  }
+
+  // Handle page changes
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  // Handle page size changes
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size)
+    setCurrentPage(1) // Reset to first page when page size changes
+  }
   const handleDownloadCSV = () => {
     if (backtestResult) {
       downloadCSV(backtestResult, stockSymbol)
@@ -147,14 +179,14 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                     <span>Download CSV</span>
                   </button>
                   <button
-                    onClick={onExpandAllMeta}
+                    onClick={expandAllMeta}
                     className="px-3 py-1 text-xs bg-teal-400 text-tuna-900 rounded hover:bg-teal-700 transition-colors "
                     type="button"
                   >
                     Expand All Meta
                   </button>
                   <button
-                    onClick={onCollapseAllMeta}
+                    onClick={collapseAllMeta}
                     className="px-3 py-1 text-xs bg-tuna-600 rounded hover:bg-tuna-700 transition-colors "
                     type="button"
                   >
@@ -256,7 +288,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                           <td className="px-3 py-2 whitespace-nowrap text-sm text-center">
                             {strategyResult?.meta && Object.keys(strategyResult.meta).length > 0 ? (
                               <button
-                                onClick={(e) => onToggleMetaExpansion(globalIndex, e)}
+                                onClick={(e) => toggleMetaExpansion(globalIndex, e)}
                                 className="text-teal-300 hover:text-teal-800 font-medium "
                                 type="button"
                               >
@@ -291,8 +323,8 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
               currentPage={currentPage}
               totalItems={totalItems}
               pageSize={pageSize}
-              onPageChange={onPageChange}
-              onPageSizeChange={onPageSizeChange}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
             />
           </div>
         </div>
