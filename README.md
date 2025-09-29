@@ -97,9 +97,19 @@ if (data.dayNumber === 0) {
   const sharesToBuy = Math.floor(1000 / data.nextBar.open);
   result.changeInShares = sharesToBuy;
   result.price = data.nextBar.open; // Optional - defaults to nextBar.open if not specified
+  
+  // Store purchase info in scratchpad for later reference
+  data.scratchpad.purchasePrice = data.nextBar.open;
+  data.scratchpad.purchaseDate = data.currentBar.timestamp;
 } else {
   // Hold for the rest of the period
   result.changeInShares = 0;
+  
+  // Track performance using scratchpad data
+  if (data.scratchpad.purchasePrice) {
+    const currentReturn = ((data.currentBar.close - data.scratchpad.purchasePrice) / data.scratchpad.purchasePrice) * 100;
+    result.meta = { returnPercent: currentReturn.toFixed(2) };
+  }
 }
 ```
 
@@ -118,6 +128,7 @@ data.previousBar      // Previous price bar
 data.nextBar          // Next price bar (for reference)
 data.currentPortfolio // Portfolio state (shares, cash, value)
 data.history         // Array of previous strategy results and portfolio snapshots
+data.scratchpad      // Persistent object for storing custom data across trading days
 ```
 
 ### Bar Object Structure
@@ -140,71 +151,113 @@ result.price = data.nextBar.open;   // Execution price (optional, defaults to ne
 result.meta = { reason: "RSI signal" }; // Custom metadata (optional)
 ```
 
+### Scratchpad Object
+The `data.scratchpad` object provides persistent storage for custom data across trading days. It's perfect for maintaining state, calculating indicators, or storing historical values that your strategy needs to reference.
+
+```javascript
+// Store any type of data
+data.scratchpad.myValue = 42;                    // Numbers
+data.scratchpad.myArray = [];                    // Arrays
+data.scratchpad.myObject = { key: "value" };     // Objects
+
+// Retrieve with fallback values
+const stored = data.scratchpad.myValue || 0;
+
+// Initialize arrays and track price history
+data.scratchpad.prices = data.scratchpad.prices || [];
+data.scratchpad.prices.push(data.currentBar.close);
+
+// Maintain rolling windows
+if (data.scratchpad.prices.length > 20) {
+  data.scratchpad.prices.shift(); // Keep only last 20 prices
+}
+
+// Calculate indicators using stored data
+const avg = data.scratchpad.prices.reduce((a,b) => a+b) / data.scratchpad.prices.length;
+```
+
+**Key Features:**
+- **Persistent**: Data survives across all trading days in a backtest
+- **Flexible**: Store numbers, arrays, objects, or any JavaScript data type
+- **Automatic**: No need to initialize - the object is always available
+- **Isolated**: Each backtest gets its own fresh scratchpad instance
+
 ### Example Strategies
 
 #### Moving Average Crossover
 ```javascript
-// Calculate simple moving averages using historical data
-if (data.dayNumber >= 50) { // Ensure we have enough data
-  // Get last 20 closing prices from history plus current bar
-  const last20Closes = data.history.slice(-19).map(h => h.bar.close).concat([data.currentBar.close]);
-  const last50Closes = data.history.slice(-49).map(h => h.bar.close).concat([data.currentBar.close]);
-  
-  const sma20 = last20Closes.reduce((sum, close) => sum + close, 0) / last20Closes.length;
-  const sma50 = last50Closes.reduce((sum, close) => sum + close, 0) / last50Closes.length;
+// Initialize price arrays in scratchpad
+data.scratchpad.prices = data.scratchpad.prices || [];
+data.scratchpad.prices.push(data.currentBar.close);
+
+// Maintain rolling windows efficiently
+if (data.scratchpad.prices.length > 50) {
+  data.scratchpad.prices.shift(); // Keep only last 50 prices
+}
+
+// Calculate moving averages once we have enough data
+if (data.scratchpad.prices.length >= 50) {
+  const prices = data.scratchpad.prices;
+  const sma20 = prices.slice(-20).reduce((sum, price) => sum + price, 0) / 20;
+  const sma50 = prices.reduce((sum, price) => sum + price, 0) / prices.length;
 
   if (sma20 > sma50 && data.currentPortfolio.sharesOwned === 0) {
-    // Buy signal
+    // Buy signal - golden cross
     const sharesToBuy = Math.floor(data.currentPortfolio.availableCash / data.nextBar.open);
     result.changeInShares = sharesToBuy;
     result.price = data.nextBar.open;
-    result.meta = { signal: "buy", sma20, sma50 };
+    result.meta = { signal: "buy", sma20, sma50, crossover: "golden" };
   } else if (sma20 < sma50 && data.currentPortfolio.sharesOwned > 0) {
-    // Sell signal
+    // Sell signal - death cross
     result.changeInShares = -data.currentPortfolio.sharesOwned;
     result.price = data.nextBar.open;
-    result.meta = { signal: "sell", sma20, sma50 };
+    result.meta = { signal: "sell", sma20, sma50, crossover: "death" };
   }
 }
 ```
 
 #### RSI Strategy
 ```javascript
-// Simple RSI implementation using 14-period RSI
-if (data.dayNumber >= 13) { // Need at least 14 data points (0-13)
-  const gains = [];
-  const losses = [];
-  
-  // Get the last 14 closing prices including current bar
-  const recentBars = data.history.slice(-13).map(h => h.bar.close).concat([data.currentBar.close]);
-  
-  // Calculate price changes over the last 14 periods
-  for (let i = 1; i < recentBars.length; i++) {
-    const change = recentBars[i] - recentBars[i - 1];
-    if (change > 0) {
-      gains.push(change);
-      losses.push(0);
-    } else {
-      gains.push(0);
-      losses.push(Math.abs(change));
-    }
-  }
-  
-  const avgGain = gains.reduce((sum, gain) => sum + gain, 0) / gains.length;
-  const avgLoss = losses.reduce((sum, loss) => sum + loss, 0) / losses.length;
+// Initialize scratchpad arrays for RSI calculation
+data.scratchpad.prices = data.scratchpad.prices || [];
+data.scratchpad.gains = data.scratchpad.gains || [];
+data.scratchpad.losses = data.scratchpad.losses || [];
+
+// Store current price and calculate price change
+data.scratchpad.prices.push(data.currentBar.close);
+
+if (data.scratchpad.prices.length > 1) {
+  const change = data.currentBar.close - data.scratchpad.prices[data.scratchpad.prices.length - 2];
+  data.scratchpad.gains.push(change > 0 ? change : 0);
+  data.scratchpad.losses.push(change < 0 ? Math.abs(change) : 0);
+}
+
+// Maintain 14-period rolling windows
+if (data.scratchpad.gains.length > 14) {
+  data.scratchpad.gains.shift();
+  data.scratchpad.losses.shift();
+}
+if (data.scratchpad.prices.length > 15) {
+  data.scratchpad.prices.shift();
+}
+
+// Calculate RSI once we have enough data
+if (data.scratchpad.gains.length >= 14) {
+  const avgGain = data.scratchpad.gains.reduce((sum, gain) => sum + gain, 0) / 14;
+  const avgLoss = data.scratchpad.losses.reduce((sum, loss) => sum + loss, 0) / 14;
   const rsi = avgLoss === 0 ? 100 : 100 - (100 / (1 + (avgGain / avgLoss)));
   
   if (rsi < 30 && data.currentPortfolio.sharesOwned === 0) {
-    // Oversold - buy
+    // Oversold - buy signal
     const sharesToBuy = Math.floor(data.currentPortfolio.availableCash / data.nextBar.open);
     result.changeInShares = sharesToBuy;
     result.price = data.nextBar.open;
-    result.meta = { rsi, signal: "oversold" };
+    result.meta = { rsi: rsi.toFixed(2), signal: "oversold", avgGain, avgLoss };
   } else if (rsi > 70 && data.currentPortfolio.sharesOwned > 0) {
-    // Overbought - sell
+    // Overbought - sell signal
     result.changeInShares = -data.currentPortfolio.sharesOwned;
     result.price = data.nextBar.open;
-    result.meta = { rsi, signal: "overbought" };
+    result.meta = { rsi: rsi.toFixed(2), signal: "overbought", avgGain, avgLoss };
   }
 }
 ```
