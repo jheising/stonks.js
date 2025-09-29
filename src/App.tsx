@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { backtest } from './utils/backtester'
-import { parseStrategyError, createEnhancedStrategyWrapper, type ParsedError } from './utils/errorParser'
+import { parseStrategyError, type ParsedError } from './utils/errorParser'
+import { createUserCodeWrapper, validateCode } from "./utils/codeCompiler"
 import type { StrategyFunctionData, StrategyFunctionResult, BacktestResult } from './types/backtesting'
 
 // Components
@@ -9,7 +10,7 @@ import { BacktestParameters, CodeEditor, ResultsDisplay, VersionModal, DataProvi
 // Hooks and utilities
 import { useLocalStorage } from './hooks/useLocalStorage'
 import { saveCodeVersion } from './utils/codeVersions'
-import { validateParameters, validateCode } from './utils/validation'
+import { validateParameters } from './utils/validation'
 
 // Constants
 import { STORAGE_KEYS, TIME_PERIODS } from './constants/storage'
@@ -24,7 +25,7 @@ import { CollapseableBox } from './components/CollapseableBox'
 
 function App() {
   const [code, setCode, { lastSaved: codeSaved }] = useLocalStorage(STORAGE_KEYS.STRATEGY_CODE, DEFAULT_STRATEGY)
-  
+
   // Data provider management
   const [selectedProviderIndex, setSelectedProviderIndex] = useLocalStorage(STORAGE_KEYS.SELECTED_DATA_PROVIDER, 0)
   const dataProvider = useRef<StockDataProviderBase>(new AvailableProviders[selectedProviderIndex]());
@@ -63,13 +64,17 @@ function App() {
   const [parsedError, setParsedError] = useState<ParsedError | null>(null)
   const [backtestSuccess, setBacktestSuccess] = useState<string | null>(null)
   const [backtestResult, setBacktestResult] = useState<BacktestResult | null>(null)
-  
+
+  // Monaco validation state
+  const [hasMonacoErrors, setHasMonacoErrors] = useState(false)
+  const [monacoError, setMonacoError] = useState<{ line: number; column: number; message: string } | null>(null)
+
   // Abort controller for cancelling running backtests
   const abortControllerRef = useRef<AbortController | null>(null)
   const [expandedMetaRows, setExpandedMetaRows] = useState<Set<number>>(new Set())
   const [showVersionModal, setShowVersionModal] = useState(false)
   const [showInstructions, setShowInstructions] = useLocalStorage(STORAGE_KEYS.SHOW_INSTRUCTIONS, true)
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
@@ -127,6 +132,12 @@ function App() {
     clearMessages()
   }
 
+  // Handle Monaco validation changes
+  const handleValidationChange = (hasErrors: boolean, firstError?: { line: number; column: number; message: string }) => {
+    setHasMonacoErrors(hasErrors)
+    setMonacoError(firstError || null)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -170,18 +181,8 @@ function App() {
       // Create strategy function from user code
       const createStrategy = () => {
         try {
-          // Convert TypeScript-like code to executable JavaScript
-          let executableCode = code
-
-          // Remove TypeScript-specific syntax for basic execution
-          executableCode = executableCode
-            .replace(/: (Bar|StrategyFunctionData|StrategyFunctionResult|PortfolioData)\b/g, '')
-            .replace(/interface\s+\w+\s*\{[^}]*\}/g, '')
-            .replace(/export\s+/g, '')
-            .replace(/import\s+.*?from\s+['"][^'"]*['"];?\s*/g, '')
-
           // Use enhanced wrapper for better error tracking
-          const wrappedCode = createEnhancedStrategyWrapper(executableCode)
+          const wrappedCode = createUserCodeWrapper(code)
 
           return new Function('data', wrappedCode)
         } catch (error) {
@@ -208,7 +209,7 @@ function App() {
 
       setBacktestResult(result)
       setBacktestSuccess(`Backtest completed successfully for ${backtestSettings.stockSymbol.toUpperCase()} from ${backtestSettings.startDate} to ${actualEndDate.split('T')[0]}.`)
-      
+
       // Reset pagination to first page for new results
       setCurrentPage(1)
 
@@ -217,7 +218,7 @@ function App() {
 
     } catch (error) {
       console.error('Backtest failed:', error)
-      
+
       if (error instanceof Error) {
         // Handle abort errors differently
         if (error.name === 'AbortError' || error.message.includes('cancelled')) {
@@ -238,19 +239,33 @@ function App() {
   }
 
   // Removed unused function: getLastSaveTime
-
   const { isValid: isDataProviderConfigured } = dataProvider.current.isConfigured;
-  const { isValid: isCodeValid } = validateCode(code)
-  const { isValid: areParametersValid, error: parameterError } = validateParameters(backtestSettings)
+  const { isValid: isCodeValidCompilation } = useMemo(() => validateCode(code), [code]);
+  const isCodeValid = isCodeValidCompilation && !hasMonacoErrors; // Code is valid only if both compilation and Monaco validation pass
+  const { isValid: areParametersValid, error: parameterError } = useMemo(() => validateParameters(backtestSettings), [backtestSettings]);
+
+  // Create combined error info, prioritizing Monaco errors for real-time feedback
+  const combinedErrorInfo = useMemo(() => {
+    if (hasMonacoErrors && monacoError) {
+      return {
+        message: monacoError.message,
+        lineNumber: monacoError.line,
+        columnNumber: monacoError.column,
+        originalError: new Error(monacoError.message),
+        errorType: 'syntax' as const
+      }
+    }
+    return parsedError
+  }, [hasMonacoErrors, monacoError, parsedError]);
 
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header with Logo */}
         <div className="flex flex-col items-center mb-8">
-          <img 
-            src={`${import.meta.env.BASE_URL}stonks-logo.png`} 
-            alt="stonks.js logo" 
+          <img
+            src={`${import.meta.env.BASE_URL}stonks-logo.png`}
+            alt="stonks.js logo"
             className="w-32 h-32"
           />
           <p className="text-tuna-400 text-center mt-2">
@@ -288,7 +303,8 @@ function App() {
               onShowVersionModal={() => setShowVersionModal(true)}
               codeSaved={codeSaved}
               isCodeValid={isCodeValid}
-              errorInfo={parsedError}
+              errorInfo={combinedErrorInfo}
+              onValidationChange={handleValidationChange}
             />
           </CollapseableBox>
 
@@ -352,9 +368,9 @@ function App() {
         <div className="mt-12 text-center">
           <p className="text-sm text-tuna-400">
             Made with ❤️ by{' '}
-            <a 
-              href="https://github.com/jheising" 
-              target="_blank" 
+            <a
+              href="https://github.com/jheising"
+              target="_blank"
               rel="noopener noreferrer"
               className="text-teal-400 hover:text-teal-300 transition-colors"
             >

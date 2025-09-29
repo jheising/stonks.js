@@ -4,6 +4,7 @@ import { formatSaveTime } from '../utils/dateFormat'
 import { getCodeEditorTypes } from '../utils/typeExtractor'
 import type { ParsedError } from '../utils/errorParser'
 
+
 interface CodeEditorProps {
   code: string
   onCodeChange: (value: string | undefined) => void
@@ -13,6 +14,7 @@ interface CodeEditorProps {
   codeSaved: Date | null
   isCodeValid: boolean
   errorInfo?: ParsedError | null
+  onValidationChange?: (hasMonacoErrors: boolean, firstError?: { line: number; column: number; message: string }) => void
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -23,11 +25,31 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   onShowVersionModal,
   codeSaved,
   isCodeValid,
-  errorInfo
+  errorInfo,
+  onValidationChange
 }) => {
   const editorRef = useRef<any>(null)
   const monacoRef = useRef<any>(null)
   const decorationsRef = useRef<any>(null)
+
+  // Handle Monaco editor validation
+  const handleMonacoValidation = (markers: any[]) => {
+    if (!onValidationChange) return
+
+    // Filter to only syntax/semantic errors (not warnings or info)
+    const errors = markers.filter(marker => marker.severity === 8) // Monaco MarkerSeverity.Error = 8
+    
+    if (errors.length > 0) {
+      const firstError = errors[0]
+      onValidationChange(true, {
+        line: firstError.startLineNumber,
+        column: firstError.startColumn,
+        message: firstError.message
+      })
+    } else {
+      onValidationChange(false)
+    }
+  }
 
   // Clear error decorations
   const clearErrorDecorations = () => {
@@ -205,6 +227,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           defaultPath="strategy.ts"
           value={code}
           onChange={onCodeChange}
+          onValidate={handleMonacoValidation}
           theme="vs-dark"
           options={{
             minimap: { enabled: false },

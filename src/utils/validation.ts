@@ -48,29 +48,3 @@ export const validateParameters = (settings: BacktestSettings) => {
 
   return { isValid: true, error: null }
 }
-
-// Validate code syntax
-export const validateCode = (code: string) => {
-  try {
-    // For TypeScript, we'll do a more basic validation since we can't easily
-    // compile TS in the browser without additional setup
-
-    // Check for basic syntax issues that would prevent JS execution
-    // Remove TypeScript-specific syntax for validation
-    const jsCode = code
-      .replace(/:\s*\w+(\[\])?(\s*\|\s*\w+(\[\])?)*(?=\s*[=,;)])/g, '') // Remove type annotations
-      .replace(/interface\s+\w+\s*{[^}]*}/g, '') // Remove interface declarations
-      .replace(/type\s+\w+\s*=\s*[^;]+;/g, '') // Remove type aliases
-      .replace(/export\s*{\s*[^}]*}/g, '') // Remove export statements
-      .replace(/import\s*{[^}]*}\s*from\s*['"][^'"]*['"];?/g, '') // Remove import statements
-
-    // Try to parse the cleaned JavaScript
-    new Function(jsCode)
-    return { isValid: true, error: null }
-  } catch (error) {
-    return {
-      isValid: false,
-      error: error instanceof Error ? error.message : 'Syntax error'
-    }
-  }
-}
