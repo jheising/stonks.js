@@ -8,3 +8,4 @@ export { Pagination } from "./Pagination";
 export { DataProviderSelector } from "./DataProviderSelector";
 export { Tooltip, InfoIcon } from "./Tooltip";
 export { MetricCard } from "./MetricCard";
+export { PerformanceChart } from "./PerformanceChart";

@@ -6,6 +6,7 @@ import { downloadCSV } from "../utils/csvExport";
 import { Pagination } from "./Pagination";
 import { ColoredValue } from "./ColoredValue";
 import { MetricCard } from "./MetricCard";
+import { PerformanceChart } from "./PerformanceChart";
 import { DateTime } from "luxon";
 import { Download, X } from "lucide-react";
 
@@ -127,6 +128,11 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                                 <p className="text-sm text-tuna-400 mt-1">Run on {DateTime.fromISO(backtestResult.timestamp).toLocaleString(DateTime.DATETIME_FULL)}</p>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Performance Chart */}
+                    <div className="mb-6">
+                        <PerformanceChart backtestResult={backtestResult} />
                     </div>
 
                     {/* Summary Cards */}

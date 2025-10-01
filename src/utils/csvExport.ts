@@ -5,9 +5,6 @@ import type { BacktestResult } from "../types/backtesting";
 export const downloadCSV = (backtestResult: BacktestResult, stockSymbol: string) => {
     if (!backtestResult) return;
 
-    // Use symbol from the backtest result for consistency
-    const symbol = backtestResult.symbol || stockSymbol;
-
     // Create performance metrics summary
     const performanceMetricsRows = [
         ["PERFORMANCE METRICS SUMMARY"],
@@ -59,7 +56,7 @@ export const downloadCSV = (backtestResult: BacktestResult, stockSymbol: string)
 
         return [
             new Date(bar.timestamp).toLocaleDateString(),
-            symbol,
+            stockSymbol,
             currency(bar.open).format({ pattern: "!#", separator: "", decimal: ".", precision: 2 }),
             currency(bar.high).format({ pattern: "!#", separator: "", decimal: ".", precision: 2 }),
             currency(bar.low).format({ pattern: "!#", separator: "", decimal: ".", precision: 2 }),
@@ -91,7 +88,7 @@ export const downloadCSV = (backtestResult: BacktestResult, stockSymbol: string)
     if (link.download !== undefined) {
         const url = URL.createObjectURL(blob);
         link.setAttribute("href", url);
-        link.setAttribute("download", `backtest-${symbol}-${new Date().toISOString().split("T")[0]}.csv`);
+        link.setAttribute("download", `backtest-${stockSymbol}-${new Date().toISOString().split("T")[0]}.csv`);
         link.style.visibility = "hidden";
         document.body.appendChild(link);
         link.click();
