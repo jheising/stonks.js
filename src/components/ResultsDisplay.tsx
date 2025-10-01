@@ -4,6 +4,7 @@ import type { BacktestResult } from '../types/backtesting'
 import type { ParsedError } from '../utils/errorParser'
 import { downloadCSV } from '../utils/csvExport'
 import { Pagination } from './Pagination'
+import { ColoredValue } from './ColoredValue'
 import { DateTime } from 'luxon'
 
 interface ResultsDisplayProps {
@@ -129,7 +130,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-tuna-600 rounded-lg p-4 ">
               <div className="text-sm text-tuna-300 mb-1 uppercase font-semibold">Starting Total Portfolio Value</div>
               <div className="text-2xl font-semibold tracking-wide">
@@ -146,16 +147,204 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
             <div className="bg-tuna-600 rounded-lg p-4 ">
               <div className="text-sm text-tuna-300 mb-1 uppercase font-semibold">Market Performance</div>
-              <div className={`text-2xl font-semibold tracking-wide ${backtestResult.portfolioData.stockPercentChange >= 0 ? 'text-teal-300' : 'text-pink-300'}`}>
-                {backtestResult.portfolioData.stockPercentChange >= 0 ? '+' : ''}{(backtestResult.portfolioData.stockPercentChange * 100).toFixed(2)}%
+              <div className="text-2xl font-semibold tracking-wide">
+                <ColoredValue 
+                  rule={{ type: 'positive-negative', value: backtestResult.portfolioData.stockPercentChange }}
+                  format={(v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(2)}%`}
+                />
               </div>
             </div>
 
             <div className="bg-tuna-600 rounded-lg p-4 ">
               <div className="text-sm text-tuna-300 mb-1 uppercase font-semibold">Strategy Performance</div>
-              <div className={`text-2xl font-semibold tracking-wide ${backtestResult.portfolioData.portfolioPercentChange >= 0 ? 'text-teal-300' : 'text-pink-300'}`}>
-                {backtestResult.portfolioData.portfolioPercentChange >= 0 ? '+' : ''}{(backtestResult.portfolioData.portfolioPercentChange * 100).toFixed(2)}%
+              <div className="text-2xl font-semibold tracking-wide">
+                <ColoredValue 
+                  rule={{ type: 'positive-negative', value: backtestResult.portfolioData.portfolioPercentChange }}
+                  format={(v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(2)}%`}
+                />
               </div>
+            </div>
+          </div>
+
+          {/* Performance Metrics */}
+          <div className="mt-6 bg-tuna-700 rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b border-tuna-600">
+              <h4 className="text-md font-semibold">Performance Analysis</h4>
+              <p className="text-sm text-tuna-400 mt-1">Advanced metrics comparing your strategy to market performance</p>
+            </div>
+            
+            <div className="p-4">
+              {/* Risk-Adjusted Returns */}
+              <div className="mb-6">
+                <h5 className="text-sm font-semibold text-tuna-300 mb-3 uppercase tracking-wider">Risk-Adjusted Returns</h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-tuna-600 rounded-lg p-3">
+                    <div className="text-xs text-tuna-400 mb-1">Sharpe Ratio</div>
+                    <div className="text-lg font-semibold">
+                      <ColoredValue 
+                        rule={{ type: 'threshold', value: backtestResult.performanceMetrics.sharpeRatio, goodThreshold: 1, okThreshold: 0 }}
+                        format={(v) => v.toFixed(2)}
+                      />
+                    </div>
+                    <div className="text-xs text-tuna-400 mt-1">Higher is better</div>
+                  </div>
+                  
+                  <div className="bg-tuna-600 rounded-lg p-3">
+                    <div className="text-xs text-tuna-400 mb-1">Sortino Ratio</div>
+                    <div className="text-lg font-semibold">
+                      <ColoredValue 
+                        rule={{ type: 'threshold', value: backtestResult.performanceMetrics.sortinoRatio, goodThreshold: 1, okThreshold: 0 }}
+                        format={(v) => isFinite(v) ? v.toFixed(2) : '∞'}
+                      />
+                    </div>
+                    <div className="text-xs text-tuna-400 mt-1">Higher is better</div>
+                  </div>
+                  
+                  <div className="bg-tuna-600 rounded-lg p-3">
+                    <div className="text-xs text-tuna-400 mb-1">Information Ratio</div>
+                    <div className="text-lg font-semibold">
+                      <ColoredValue 
+                        rule={{ type: 'threshold', value: backtestResult.performanceMetrics.informationRatio, goodThreshold: 0.5, okThreshold: 0 }}
+                        format={(v) => v.toFixed(2)}
+                      />
+                    </div>
+                    <div className="text-xs text-tuna-400 mt-1">Higher is better</div>
+                  </div>
+                  
+                  <div className="bg-tuna-600 rounded-lg p-3">
+                    <div className="text-xs text-tuna-400 mb-1">Calmar Ratio</div>
+                    <div className="text-lg font-semibold">
+                      <ColoredValue 
+                        rule={{ type: 'threshold', value: backtestResult.performanceMetrics.calmarRatio, goodThreshold: 1, okThreshold: 0 }}
+                        format={(v) => v.toFixed(2)}
+                      />
+                    </div>
+                    <div className="text-xs text-tuna-400 mt-1">Higher is better</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Market Comparison */}
+              <div className="mb-6">
+                <h5 className="text-sm font-semibold text-tuna-300 mb-3 uppercase tracking-wider">Market Comparison</h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-tuna-600 rounded-lg p-3">
+                    <div className="text-xs text-tuna-400 mb-1">Alpha</div>
+                    <div className="text-lg font-semibold">
+                      <ColoredValue 
+                        rule={{ type: 'positive-negative', value: backtestResult.performanceMetrics.alpha }}
+                        format={(v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(2)}%`}
+                      />
+                    </div>
+                    <div className="text-xs text-tuna-400 mt-1">Excess return vs market</div>
+                  </div>
+                  
+                  <div className="bg-tuna-600 rounded-lg p-3">
+                    <div className="text-xs text-tuna-400 mb-1">Beta</div>
+                    <div className="text-lg font-semibold">
+                      <ColoredValue 
+                        rule={{ 
+                          type: 'custom', 
+                          value: backtestResult.performanceMetrics.beta,
+                          getColor: (v) => Math.abs(v - 1) < 0.2 ? 'text-yellow-300' : v > 1 ? 'text-pink-300' : 'text-teal-300'
+                        }}
+                        format={(v) => v.toFixed(2)}
+                      />
+                    </div>
+                    <div className="text-xs text-tuna-400 mt-1">Market correlation</div>
+                  </div>
+                  
+                  <div className="bg-tuna-600 rounded-lg p-3">
+                    <div className="text-xs text-tuna-400 mb-1">Correlation</div>
+                    <div className="text-lg font-semibold">
+                      <ColoredValue 
+                        rule={{ 
+                          type: 'custom', 
+                          value: backtestResult.performanceMetrics.correlation,
+                          getColor: (v) => Math.abs(v) > 0.7 ? 'text-pink-300' : Math.abs(v) > 0.3 ? 'text-yellow-300' : 'text-teal-300'
+                        }}
+                        format={(v) => v.toFixed(2)}
+                      />
+                    </div>
+                    <div className="text-xs text-tuna-400 mt-1">-1 to 1 scale</div>
+                  </div>
+                  
+                  <div className="bg-tuna-600 rounded-lg p-3">
+                    <div className="text-xs text-tuna-400 mb-1">Volatility</div>
+                    <div className="text-lg font-semibold">
+                      <ColoredValue 
+                        rule={{ 
+                          type: 'custom', 
+                          value: backtestResult.performanceMetrics.volatility,
+                          getColor: (v) => v < backtestResult.performanceMetrics.marketVolatility ? 'text-teal-300' : 'text-pink-300'
+                        }}
+                        format={(v) => `${(v * 100).toFixed(1)}%`}
+                      />
+                    </div>
+                    <div className="text-xs text-tuna-400 mt-1">vs Market: {(backtestResult.performanceMetrics.marketVolatility * 100).toFixed(1)}%</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Risk Metrics */}
+              <div className="mb-6">
+                <h5 className="text-sm font-semibold text-tuna-300 mb-3 uppercase tracking-wider">Risk Metrics</h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-tuna-600 rounded-lg p-3">
+                    <div className="text-xs text-tuna-400 mb-1">Maximum Drawdown</div>
+                    <div className="text-lg font-semibold text-pink-300">
+                      -{(backtestResult.performanceMetrics.maxDrawdownPercent * 100).toFixed(2)}%
+                    </div>
+                    <div className="text-xs text-tuna-400 mt-1">${backtestResult.performanceMetrics.maxDrawdown.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Trade Analysis */}
+              {backtestResult.performanceMetrics.totalTrades > 0 && (
+                <div>
+                  <h5 className="text-sm font-semibold text-tuna-300 mb-3 uppercase tracking-wider">Trade Analysis</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-tuna-600 rounded-lg p-3">
+                      <div className="text-xs text-tuna-400 mb-1">Win Rate</div>
+                      <div className="text-lg font-semibold">
+                        <ColoredValue 
+                          rule={{ type: 'threshold', value: backtestResult.performanceMetrics.winRate, goodThreshold: 0.6, okThreshold: 0.4 }}
+                          format={(v) => `${(v * 100).toFixed(1)}%`}
+                        />
+                      </div>
+                      <div className="text-xs text-tuna-400 mt-1">{backtestResult.performanceMetrics.winningTrades}/{backtestResult.performanceMetrics.totalTrades} trades</div>
+                    </div>
+                    
+                    <div className="bg-tuna-600 rounded-lg p-3">
+                      <div className="text-xs text-tuna-400 mb-1">Payoff Ratio</div>
+                      <div className="text-lg font-semibold">
+                        <ColoredValue 
+                          rule={{ type: 'threshold', value: backtestResult.performanceMetrics.payoffRatio, goodThreshold: 2, okThreshold: 1 }}
+                          format={(v) => isFinite(v) ? v.toFixed(2) : '∞'}
+                        />
+                      </div>
+                      <div className="text-xs text-tuna-400 mt-1">Avg win / Avg loss</div>
+                    </div>
+                    
+                    <div className="bg-tuna-600 rounded-lg p-3">
+                      <div className="text-xs text-tuna-400 mb-1">Average Win</div>
+                      <div className="text-lg font-semibold text-teal-300">
+                        +{(backtestResult.performanceMetrics.averageWin * 100).toFixed(2)}%
+                      </div>
+                      <div className="text-xs text-tuna-400 mt-1">Per winning trade</div>
+                    </div>
+                    
+                    <div className="bg-tuna-600 rounded-lg p-3">
+                      <div className="text-xs text-tuna-400 mb-1">Average Loss</div>
+                      <div className="text-lg font-semibold text-pink-300">
+                        -{(backtestResult.performanceMetrics.averageLoss * 100).toFixed(2)}%
+                      </div>
+                      <div className="text-xs text-tuna-400 mt-1">Per losing trade</div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -249,9 +438,10 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                           </td>
                           <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-right tracking-wider">
                             {strategyResult?.changeInShares !== undefined && strategyResult.changeInShares !== 0 ? (
-                              <span className={strategyResult.changeInShares > 0 ? 'text-teal-300' : 'text-pink-300'}>
-                                {strategyResult.changeInShares > 0 ? '+' : ''}{strategyResult.changeInShares}
-                              </span>
+                              <ColoredValue 
+                                rule={{ type: 'positive-negative', value: strategyResult.changeInShares }}
+                                format={(v) => `${v > 0 ? '+' : ''}${v}`}
+                              />
                             ) : (
                               <span className="text-tuna-400">-</span>
                             )}
@@ -267,21 +457,15 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                               // Get previous portfolio value for comparison
                               const previousPortfolioValue = index > 0 ? backtestResult.history[index - 1].portfolioSnapshot.portfolioValue : portfolioSnapshot.portfolioValue;
                               const currentPortfolioValue = portfolioSnapshot.portfolioValue;
+                              const change = currentPortfolioValue - previousPortfolioValue;
 
-                              // Determine color based on change
-                              let colorClass = ''; // default
-                              if (index > 0) { // only apply color from second row onwards
-                                if (currentPortfolioValue > previousPortfolioValue) {
-                                  colorClass = 'text-teal-300';
-                                } else if (currentPortfolioValue < previousPortfolioValue) {
-                                  colorClass = 'text-pink-300';
-                                }
-                              }
-
-                              return (
-                                <span className={colorClass}>
-                                  {currency(portfolioSnapshot.portfolioValue).format()}
-                                </span>
+                              return index > 0 ? (
+                                <ColoredValue 
+                                  rule={{ type: 'positive-negative', value: change }}
+                                  format={() => currency(portfolioSnapshot.portfolioValue).format()}
+                                />
+                              ) : (
+                                <span>{currency(portfolioSnapshot.portfolioValue).format()}</span>
                               );
                             })()}
                           </td>

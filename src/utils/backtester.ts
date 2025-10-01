@@ -9,6 +9,7 @@ import type {
 } from '../types/backtesting';
 import { MathUtils } from './MathUtils';
 import type { StockDataProviderBase } from '../providers/StockDataProviderBase';
+import { calculatePerformanceMetrics } from './performanceMetrics';
 
 export async function backtest(props: { dataProvider: StockDataProviderBase, symbol: string, startDate: string, endDate?: string, startingAmount: number, barResolutionValue: string, barResolutionPeriod: string, strategy: (data: StrategyFunctionData) => Promise<StrategyFunctionResult>, abortSignal?: AbortSignal }): Promise<BacktestResult> {
     const { dataProvider, symbol, startDate, endDate, startingAmount, barResolutionValue, barResolutionPeriod, abortSignal } = props;
@@ -98,9 +99,13 @@ export async function backtest(props: { dataProvider: StockDataProviderBase, sym
         portfolioData.stockPercentChange = MathUtils.percentChange(nextBar.open, history[0].bar.open);
     }
 
+    // Calculate performance metrics
+    const performanceMetrics = calculatePerformanceMetrics(history, startingAmount);
+
     return {
         portfolioData,
         history: history,
+        performanceMetrics,
         timestamp: new Date().toISOString()
     };
 }

@@ -49,9 +49,40 @@ export interface StrategyFunctionData {
   scratchpad: Record<string, any>;
 }
 
+export interface PerformanceMetrics {
+  // Risk-adjusted returns
+  sharpeRatio: number;
+  sortinoRatio: number;
+  
+  // Drawdown metrics
+  maxDrawdown: number;
+  maxDrawdownPercent: number;
+  
+  // Market comparison
+  alpha: number;
+  beta: number;
+  
+  // Trade analysis
+  winRate: number;
+  payoffRatio: number;
+  totalTrades: number;
+  winningTrades: number;
+  losingTrades: number;
+  averageWin: number;
+  averageLoss: number;
+  
+  // Additional metrics
+  volatility: number;
+  marketVolatility: number;
+  correlation: number;
+  informationRatio: number;
+  calmarRatio: number;
+}
+
 export interface BacktestResult {
   portfolioData: PortfolioData;
   history: Array<StrategyHistory>;
+  performanceMetrics: PerformanceMetrics;
    // ISO string of when the backtest was run
   timestamp: string;
 }
