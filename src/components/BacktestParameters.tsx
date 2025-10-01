@@ -22,7 +22,7 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({ settings
     return (
         <div>
             <div className="flex justify-between items-center mb-4">
-                <div className="text-xs text-tuna-500">
+                <div className="text-xs text-tuna-400">
                     {isReady && (
                         <span className="flex items-center space-x-1 text-tuna-900 bg-teal-400 px-2 py-1 rounded-full">
                             <Check className="w-3 h-3" />
@@ -147,7 +147,7 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({ settings
                             <option value={TIME_PERIODS.MONTH}>month{barResolutionValue !== "1" ? "s" : ""}</option>
                         </select>
                     </div>
-                    <p className="mt-1 text-xs text-tuna-500">Data frequency for bars (default: 1 day)</p>
+                    <p className="mt-1 text-xs text-tuna-400">Data frequency for bars (default: 1 day)</p>
                 </div>
             </div>
 
@@ -157,9 +157,10 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({ settings
                 </div>
             )}
 
-            <ul className="text-xs list-disc list-inside text-tuna-500">
+            <ul className="text-xs list-disc list-inside text-tuna-400">
                 <li>Dates are considered to be in the US Eastern Timezone.</li>
                 <li>Dates are exclusive meaning that the backtest will always have one previous and one next day to compare to.</li>
+                <li>Stock prices are adjusted for splits.</li>
             </ul>
         </div>
     );

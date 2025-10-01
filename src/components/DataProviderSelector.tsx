@@ -24,7 +24,7 @@ export const DataProviderSelector: React.FC<DataProviderSelectorProps> = ({ sele
                     </option>
                 ))}
             </select>
-            <p className="mt-1 text-xs text-tuna-500">Choose your market data provider</p>
+            <p className="mt-1 text-xs text-tuna-400">Choose your market data provider</p>
         </div>
     );
 };

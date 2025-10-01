@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
-import { createChart, CandlestickSeries, LineSeries } from "lightweight-charts";
-import type { IChartApi, ISeriesApi, CandlestickData, LineData, UTCTimestamp } from "lightweight-charts";
+import { createChart, CandlestickSeries, LineSeries, createSeriesMarkers } from "lightweight-charts";
+import type { IChartApi, ISeriesApi, CandlestickData, LineData, UTCTimestamp, SeriesMarker, ISeriesMarkersPluginApi, Time } from "lightweight-charts";
 import type { BacktestResult } from "../types/backtesting";
 import { Eye, EyeOff } from "lucide-react";
 import { useLocalStorage } from "../hooks/useLocalStorage";
@@ -15,6 +15,7 @@ interface SeriesToggle {
     portfolioValue: boolean;
     cash: boolean;
     sharesOwned: boolean;
+    tradeMarkers: boolean;
 }
 
 export const PerformanceChart: React.FC<PerformanceChartProps> = ({ backtestResult }) => {
@@ -24,12 +25,14 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ backtestResu
     const portfolioValueSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
     const cashSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
     const sharesOwnedSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
+    const tradeMarkersRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null);
 
     const [seriesVisible, setSeriesVisible] = useLocalStorage<SeriesToggle>(STORAGE_KEYS.CHART_SERIES_VISIBILITY, {
         candlestick: true,
         portfolioValue: true,
         cash: false,
-        sharesOwned: false
+        sharesOwned: false,
+        tradeMarkers: true
     });
 
     useEffect(() => {
@@ -113,6 +116,33 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ backtestResu
             });
             candlestickSeries.setData(candlestickData);
             candlestickSeriesRef.current = candlestickSeries;
+
+            // Create trade markers if visible
+            if (seriesVisible.tradeMarkers) {
+                const tradeMarkers: SeriesMarker<Time>[] = [];
+
+                backtestResult.history.forEach(item => {
+                    const changeInShares = item.strategyResult?.changeInShares;
+
+                    if (changeInShares && changeInShares !== 0) {
+                        const timestamp = (new Date(item.bar.timestamp).getTime() / 1000) as UTCTimestamp;
+                        const price = item.strategyResult.price || item.bar.open;
+                        const isBuy = changeInShares > 0;
+
+                        tradeMarkers.push({
+                            time: timestamp,
+                            position: isBuy ? "belowBar" : "aboveBar",
+                            color: isBuy ? "#2dd4bf" : "#f9a8d4",
+                            shape: isBuy ? "arrowUp" : "arrowDown",
+                            text: `${isBuy ? "BUY" : "SELL"} ${Math.abs(changeInShares)} @ $${price.toFixed(2)}`,
+                            size: 1.5
+                        });
+                    }
+                });
+
+                const markersPlugin = createSeriesMarkers(candlestickSeries, tradeMarkers);
+                tradeMarkersRef.current = markersPlugin;
+            }
         }
 
         if (seriesVisible.portfolioValue) {
@@ -194,6 +224,11 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ backtestResu
             candlestickSeries.setData(candlestickData);
             candlestickSeriesRef.current = candlestickSeries;
         } else if (!seriesVisible.candlestick && candlestickSeriesRef.current) {
+            // Remove trade markers before removing candlestick series
+            if (tradeMarkersRef.current) {
+                tradeMarkersRef.current.detach();
+                tradeMarkersRef.current = null;
+            }
             chartRef.current.removeSeries(candlestickSeriesRef.current);
             candlestickSeriesRef.current = null;
         }
@@ -257,6 +292,36 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ backtestResu
             chartRef.current.removeSeries(sharesOwnedSeriesRef.current);
             sharesOwnedSeriesRef.current = null;
         }
+
+        // Handle trade markers (requires candlestick series)
+        if (seriesVisible.tradeMarkers && candlestickSeriesRef.current && !tradeMarkersRef.current) {
+            const tradeMarkers: SeriesMarker<Time>[] = [];
+
+            backtestResult.history.forEach(item => {
+                const changeInShares = item.strategyResult?.changeInShares;
+
+                if (changeInShares && changeInShares !== 0) {
+                    const timestamp = (new Date(item.bar.timestamp).getTime() / 1000) as UTCTimestamp;
+                    const price = item.strategyResult.price || item.bar.open;
+                    const isBuy = changeInShares > 0;
+
+                    tradeMarkers.push({
+                        time: timestamp,
+                        position: isBuy ? "belowBar" : "aboveBar",
+                        color: isBuy ? "#2dd4bf" : "#f9a8d4",
+                        shape: isBuy ? "arrowUp" : "arrowDown",
+                        text: `${isBuy ? "BUY" : "SELL"} ${Math.abs(changeInShares)} @ $${price.toFixed(2)}`,
+                        size: 1.5
+                    });
+                }
+            });
+
+            const markersPlugin = createSeriesMarkers(candlestickSeriesRef.current, tradeMarkers);
+            tradeMarkersRef.current = markersPlugin;
+        } else if (!seriesVisible.tradeMarkers && tradeMarkersRef.current) {
+            tradeMarkersRef.current.detach();
+            tradeMarkersRef.current = null;
+        }
     }, [seriesVisible, backtestResult]);
 
     const toggleSeries = (series: keyof SeriesToggle) => {
@@ -311,6 +376,18 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ backtestResu
                     {seriesVisible.sharesOwned ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                     <span>Shares Owned</span>
                     <div className="w-3 h-3 rounded" style={{ backgroundColor: "#c084fc" }}></div>
+                </button>
+
+                <button
+                    onClick={() => toggleSeries("tradeMarkers")}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center space-x-2 transition-colors ${
+                        seriesVisible.tradeMarkers ? "bg-gray-400/20 text-gray-300" : "bg-tuna-600 text-tuna-400"
+                    }`}
+                    disabled={!seriesVisible.candlestick}
+                    title={!seriesVisible.candlestick ? "Enable Candlestick chart to show trade markers" : ""}
+                >
+                    {seriesVisible.tradeMarkers ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    <span>Trade Markers</span>
                 </button>
             </div>
 

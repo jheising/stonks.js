@@ -41,7 +41,7 @@ export const ApiConfiguration: React.FC<ApiConfigurationProps> = ({ apiKey, apiS
                     />
                 </div>
             </div>
-            <div className="text-xs text-tuna-500">
+            <div className="text-xs text-tuna-400">
                 <div className="flex items-center space-x-1">
                     <Info className="w-3 h-3" />
                     <span>API credentials are stored securely in your browser's local storage</span>
