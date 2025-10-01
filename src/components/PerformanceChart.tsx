@@ -1,8 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { createChart, CandlestickSeries, LineSeries } from "lightweight-charts";
 import type { IChartApi, ISeriesApi, CandlestickData, LineData, UTCTimestamp } from "lightweight-charts";
 import type { BacktestResult } from "../types/backtesting";
 import { Eye, EyeOff } from "lucide-react";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import { STORAGE_KEYS } from "../constants/storage";
 
 interface PerformanceChartProps {
     backtestResult: BacktestResult;
@@ -23,11 +25,11 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ backtestResu
     const cashSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
     const sharesOwnedSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
 
-    const [seriesVisible, setSeriesVisible] = useState<SeriesToggle>({
+    const [seriesVisible, setSeriesVisible] = useLocalStorage<SeriesToggle>(STORAGE_KEYS.CHART_SERIES_VISIBILITY, {
         candlestick: true,
         portfolioValue: true,
-        cash: true,
-        sharesOwned: true
+        cash: false,
+        sharesOwned: false
     });
 
     useEffect(() => {
@@ -99,47 +101,52 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ backtestResu
             });
         });
 
-        // Create candlestick series
-        const candlestickSeries = chart.addSeries(CandlestickSeries, {
-            upColor: "#2dd4bf",
-            downColor: "#f9a8d4",
-            borderVisible: false,
-            wickUpColor: "#2dd4bf",
-            wickDownColor: "#f9a8d4",
-            priceScaleId: "right"
-        });
-        candlestickSeries.setData(candlestickData);
-        candlestickSeriesRef.current = candlestickSeries;
+        // Create series only if they are visible
+        if (seriesVisible.candlestick) {
+            const candlestickSeries = chart.addSeries(CandlestickSeries, {
+                upColor: "#2dd4bf",
+                downColor: "#f9a8d4",
+                borderVisible: false,
+                wickUpColor: "#2dd4bf",
+                wickDownColor: "#f9a8d4",
+                priceScaleId: "right"
+            });
+            candlestickSeries.setData(candlestickData);
+            candlestickSeriesRef.current = candlestickSeries;
+        }
 
-        // Create portfolio value line series
-        const portfolioValueSeries = chart.addSeries(LineSeries, {
-            color: "#fbbf24",
-            lineWidth: 2,
-            title: "Portfolio Value",
-            priceScaleId: "left"
-        });
-        portfolioValueSeries.setData(portfolioValueData);
-        portfolioValueSeriesRef.current = portfolioValueSeries;
+        if (seriesVisible.portfolioValue) {
+            const portfolioValueSeries = chart.addSeries(LineSeries, {
+                color: "#fbbf24",
+                lineWidth: 2,
+                title: "Portfolio Value",
+                priceScaleId: "left"
+            });
+            portfolioValueSeries.setData(portfolioValueData);
+            portfolioValueSeriesRef.current = portfolioValueSeries;
+        }
 
-        // Create cash line series
-        const cashSeries = chart.addSeries(LineSeries, {
-            color: "#60a5fa",
-            lineWidth: 2,
-            title: "Cash",
-            priceScaleId: "left"
-        });
-        cashSeries.setData(cashData);
-        cashSeriesRef.current = cashSeries;
+        if (seriesVisible.cash) {
+            const cashSeries = chart.addSeries(LineSeries, {
+                color: "#60a5fa",
+                lineWidth: 2,
+                title: "Cash",
+                priceScaleId: "left"
+            });
+            cashSeries.setData(cashData);
+            cashSeriesRef.current = cashSeries;
+        }
 
-        // Create shares owned line series
-        const sharesOwnedSeries = chart.addSeries(LineSeries, {
-            color: "#c084fc",
-            lineWidth: 2,
-            title: "Shares Owned",
-            priceScaleId: "left"
-        });
-        sharesOwnedSeries.setData(sharesOwnedData);
-        sharesOwnedSeriesRef.current = sharesOwnedSeries;
+        if (seriesVisible.sharesOwned) {
+            const sharesOwnedSeries = chart.addSeries(LineSeries, {
+                color: "#c084fc",
+                lineWidth: 2,
+                title: "Shares Owned",
+                priceScaleId: "left"
+            });
+            sharesOwnedSeries.setData(sharesOwnedData);
+            sharesOwnedSeriesRef.current = sharesOwnedSeries;
+        }
 
         // Fit content
         chart.timeScale().fitContent();

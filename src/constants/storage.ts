@@ -11,7 +11,8 @@ export const STORAGE_KEYS = {
     BAR_RESOLUTION_VALUE: "backtest_bar_resolution_value",
     BAR_RESOLUTION_PERIOD: "backtest_bar_resolution_period",
     BACKTEST_SETTINGS: "backtest_settings",
-    SELECTED_DATA_PROVIDER: "selected_data_provider"
+    SELECTED_DATA_PROVIDER: "selected_data_provider",
+    CHART_SERIES_VISIBILITY: "chart_series_visibility"
 } as const;
 
 // Bar resolution types
