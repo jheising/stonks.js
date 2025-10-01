@@ -1,31 +1,38 @@
 // Removed unused import: DateTime from luxon
-import currency from 'currency.js';
-import type {
-    PortfolioData,
-    StrategyFunctionData,
-    StrategyFunctionResult,
-    StrategyHistory,
-    BacktestResult
-} from '../types/backtesting';
-import { MathUtils } from './MathUtils';
-import type { StockDataProviderBase } from '../providers/StockDataProviderBase';
-import { calculatePerformanceMetrics } from './performanceMetrics';
+import currency from "currency.js";
+import type { PortfolioData, StrategyFunctionData, StrategyFunctionResult, StrategyHistory, BacktestResult } from "../types/backtesting";
+import { MathUtils } from "./MathUtils";
+import type { StockDataProviderBase } from "../providers/StockDataProviderBase";
+import { calculatePerformanceMetrics } from "./performanceMetrics";
 
-export async function backtest(props: { dataProvider: StockDataProviderBase, symbol: string, startDate: string, endDate?: string, startingAmount: number, barResolutionValue: string, barResolutionPeriod: string, strategy: (data: StrategyFunctionData) => Promise<StrategyFunctionResult>, abortSignal?: AbortSignal }): Promise<BacktestResult> {
+export async function backtest(props: {
+    dataProvider: StockDataProviderBase;
+    symbol: string;
+    startDate: string;
+    endDate?: string;
+    startingAmount: number;
+    barResolutionValue: string;
+    barResolutionPeriod: string;
+    strategy: (data: StrategyFunctionData) => Promise<StrategyFunctionResult>;
+    abortSignal?: AbortSignal;
+}): Promise<BacktestResult> {
     const { dataProvider, symbol, startDate, endDate, startingAmount, barResolutionValue, barResolutionPeriod, abortSignal } = props;
 
     // Check if cancelled before starting
     if (abortSignal?.aborted) {
-        throw new Error('Backtest was cancelled');
+        throw new Error("Backtest was cancelled");
     }
 
-    const bars = await dataProvider.getBars({
-        symbol,
-        startDate,
-        endDate,
-        barResolutionValue,
-        barResolutionPeriod
-    }, abortSignal);
+    const bars = await dataProvider.getBars(
+        {
+            symbol,
+            startDate,
+            endDate,
+            barResolutionValue,
+            barResolutionPeriod
+        },
+        abortSignal
+    );
 
     const history: Array<StrategyHistory> = [];
     const portfolioData: PortfolioData = {
@@ -42,7 +49,7 @@ export async function backtest(props: { dataProvider: StockDataProviderBase, sym
     for (let i = 0; i < bars.length; i++) {
         // Check for cancellation periodically
         if (abortSignal?.aborted) {
-            throw new Error('Backtest was cancelled');
+            throw new Error("Backtest was cancelled");
         }
 
         const bar = bars[i];
@@ -71,16 +78,14 @@ export async function backtest(props: { dataProvider: StockDataProviderBase, sym
             portfolioSnapshot: portfolioSnapshot
         });
 
-
         if (strategyResult.changeInShares && strategyResult.changeInShares !== 0) {
             portfolioData.sharesOwned += strategyResult.changeInShares;
-            
+
             // Use currency.js for precise cash calculation
             const tradePrice = strategyResult.price ?? nextBar.open;
             const tradeCost = currency(strategyResult.changeInShares).multiply(tradePrice);
             portfolioData.availableCash = currency(portfolioData.availableCash).subtract(tradeCost).value;
-        }
-        else {
+        } else {
             strategyResult.price = undefined;
         }
 

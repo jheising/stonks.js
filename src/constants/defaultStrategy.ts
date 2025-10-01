@@ -10,4 +10,4 @@ if (data.dayNumber === 0) {
 } else {
   // Hold for the rest of the period
   result.changeInShares = 0;
-}`
+}`;

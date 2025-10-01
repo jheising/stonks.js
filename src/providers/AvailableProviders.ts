@@ -1,5 +1,3 @@
 import { AlpacaDataProvider } from "./AlpacaDataProvider";
 
-export const AvailableProviders = [
-  AlpacaDataProvider
-] as const
+export const AvailableProviders = [AlpacaDataProvider] as const;
