@@ -32,6 +32,10 @@ export interface PerformanceMetrics {
 
 /**
  * Calculate comprehensive performance metrics for a backtest result
+ *
+ * NOTE: All variance/volatility calculations use POPULATION variance (÷ N), not sample variance (÷ N-1).
+ * This is appropriate for backtesting where we treat historical data as the complete population
+ * for that specific backtest period, not as a sample estimate.
  */
 export function calculatePerformanceMetrics(
     history: StrategyHistory[],
@@ -154,7 +158,7 @@ function calculateSortinoRatio(returns: number[], riskFreeRate: number): number 
     const negativeReturns = returns.filter(r => r < 0);
     if (negativeReturns.length === 0) return Infinity; // No downside risk
 
-    const downsideVariance = negativeReturns.reduce((sum, r) => sum + Math.pow(r, 2), 0) / returns.length;
+    const downsideVariance = negativeReturns.reduce((sum, r) => sum + Math.pow(r, 2), 0) / negativeReturns.length;
     const downsideVolatility = Math.sqrt(downsideVariance) * Math.sqrt(252);
 
     if (downsideVolatility === 0) return Infinity;
@@ -204,6 +208,10 @@ function calculateAlpha(strategyReturns: number[], marketReturns: number[], beta
 
 /**
  * Calculate correlation between strategy and market returns
+ *
+ * NOTE: Uses raw sums (not divided by N) because the normalization constants cancel out:
+ * correlation = Σ[(x-μx)(y-μy)] / √[Σ(x-μx)² × Σ(y-μy)²]
+ * This is mathematically equivalent to the standard formula where each term is divided by N.
  */
 function calculateCorrelation(strategyReturns: number[], marketReturns: number[]): number {
     if (strategyReturns.length !== marketReturns.length || strategyReturns.length === 0) return 0;
@@ -211,6 +219,7 @@ function calculateCorrelation(strategyReturns: number[], marketReturns: number[]
     const strategyMean = strategyReturns.reduce((sum, r) => sum + r, 0) / strategyReturns.length;
     const marketMean = marketReturns.reduce((sum, r) => sum + r, 0) / marketReturns.length;
 
+    // Using raw sums - N's cancel out in the final ratio
     let covariance = 0;
     let strategyVariance = 0;
     let marketVariance = 0;
@@ -230,6 +239,7 @@ function calculateCorrelation(strategyReturns: number[], marketReturns: number[]
 
 /**
  * Calculate maximum drawdown
+ * @returns maxDrawdown in dollars and maxDrawdownPercent as a FRACTION (0-1), not percentage (0-100)
  */
 function calculateMaxDrawdown(
     history: StrategyHistory[],
@@ -240,7 +250,8 @@ function calculateMaxDrawdown(
 } {
     if (history.length === 0) return { maxDrawdown: 0, maxDrawdownPercent: 0 };
 
-    let peak = startingCash;
+    // Use first portfolio value as initial peak, not startingCash
+    let peak = history[0].portfolioSnapshot.portfolioValue ?? startingCash;
     let maxDrawdown = 0;
     let maxDrawdownPercent = 0;
 
@@ -370,6 +381,8 @@ function calculateInformationRatio(strategyReturns: number[], marketReturns: num
 
 /**
  * Calculate Calmar Ratio (annualized return / max drawdown)
+ * @param returns Array of daily returns
+ * @param maxDrawdownPercent Maximum drawdown as a FRACTION (0-1), not a percentage (0-100)
  */
 function calculateCalmarRatio(returns: number[], maxDrawdownPercent: number): number {
     if (returns.length === 0 || maxDrawdownPercent === 0) return 0;
@@ -377,6 +390,7 @@ function calculateCalmarRatio(returns: number[], maxDrawdownPercent: number): nu
     const averageReturn = returns.reduce((sum, r) => sum + r, 0) / returns.length;
     const annualizedReturn = averageReturn * 252;
 
+    // maxDrawdownPercent must be a fraction (e.g., 0.0826 for 8.26%)
     return annualizedReturn / maxDrawdownPercent;
 }
 

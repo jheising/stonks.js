@@ -296,7 +296,7 @@ function App() {
                                 backtestSuccess={backtestSuccess}
                                 backtestError={backtestError}
                                 parsedError={parsedError}
-                                stockSymbol={backtestSettings.stockSymbol}
+                                stockSymbol={backtestResult?.symbol ?? backtestSettings.stockSymbol}
                                 onClearError={() => {
                                     setBacktestError(null);
                                     setParsedError(null);

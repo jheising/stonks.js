@@ -85,6 +85,8 @@ export interface BacktestResult {
     performanceMetrics: PerformanceMetrics;
     // ISO string of when the backtest was run
     timestamp: string;
+    // The stock symbol that was used in this backtest
+    symbol: string;
 }
 
 export interface BacktestMarketDataProps {

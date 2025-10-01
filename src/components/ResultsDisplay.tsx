@@ -169,8 +169,8 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                                 tooltip={
                                     <>
                                         <div>Measures risk-adjusted returns per unit of risk taken.</div>
-                                        <div className="mt-2 text-teal-300 font-semibold">Good: &gt;1</div>
-                                        <div className="text-teal-300 font-semibold">Excellent: &gt;2</div>
+                                        <div className="mt-2 text-teal-300 font-semibold">Excellent: &gt;2</div>
+                                        <div className="text-teal-300 font-semibold">Good: &gt;1</div>
                                         <div className="text-yellow-300 font-semibold">Acceptable: 0-1</div>
                                         <div className="text-pink-300 font-semibold">Poor: &lt;0</div>
                                         <div className="mt-1 text-tuna-400">Higher is better</div>
@@ -189,8 +189,8 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                                 tooltip={
                                     <>
                                         <div>Similar to Sharpe but only penalizes downside volatility.</div>
-                                        <div className="mt-2 text-teal-300 font-semibold">Good: &gt;1</div>
-                                        <div className="text-teal-300 font-semibold">Excellent: &gt;2</div>
+                                        <div className="mt-2 text-teal-300 font-semibold">Excellent: &gt;2</div>
+                                        <div className="text-teal-300 font-semibold">Good: &gt;1</div>
                                         <div className="text-yellow-300 font-semibold">Acceptable: 0-1</div>
                                         <div className="text-pink-300 font-semibold">Poor: &lt;0</div>
                                         <div className="mt-1 text-tuna-400">Higher is better</div>
@@ -208,9 +208,9 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                                 title="Information Ratio"
                                 tooltip={
                                     <>
-                                        <div>Measures excess returns (alpha) per unit of active risk.</div>
-                                        <div className="mt-2 text-teal-300 font-semibold">Good: &gt;0.5</div>
-                                        <div className="text-teal-300 font-semibold">Excellent: &gt;1</div>
+                                        <div>Measures excess returns vs. buy-and-hold per unit of tracking error.</div>
+                                        <div className="mt-2 text-teal-300 font-semibold">Excellent: &gt;1</div>
+                                        <div className="text-teal-300 font-semibold">Good: &gt;0.5</div>
                                         <div className="text-yellow-300 font-semibold">Acceptable: 0-0.5</div>
                                         <div className="text-pink-300 font-semibold">Poor: &lt;0</div>
                                         <div className="mt-1 text-tuna-400">Higher is better</div>
@@ -229,8 +229,8 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                                 tooltip={
                                     <>
                                         <div>Annual return divided by maximum drawdown.</div>
-                                        <div className="mt-2 text-teal-300 font-semibold">Good: &gt;1</div>
-                                        <div className="text-teal-300 font-semibold">Excellent: &gt;3</div>
+                                        <div className="mt-2 text-teal-300 font-semibold">Excellent: &gt;3</div>
+                                        <div className="text-teal-300 font-semibold">Good: &gt;1</div>
                                         <div className="text-yellow-300 font-semibold">Acceptable: 0-1</div>
                                         <div className="text-pink-300 font-semibold">Poor: &lt;0</div>
                                         <div className="mt-1 text-tuna-400">Higher is better</div>
@@ -248,20 +248,21 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
                     {/* Market Comparison */}
                     <div className="mb-6">
-                        <h5 className="text-sm font-semibold text-tuna-300 mb-3 uppercase tracking-wider">Market Comparison</h5>
+                        <h5 className="text-sm font-semibold text-tuna-300 mb-3 uppercase tracking-wider">Buy-and-Hold Comparison</h5>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <MetricCard
                                 title="Alpha"
                                 tooltip={
                                     <>
-                                        <div>Excess returns beyond what the market delivered.</div>
-                                        <div className="mt-2 text-teal-300 font-semibold">Good: &gt;0%</div>
-                                        <div className="text-teal-300 font-semibold">Excellent: &gt;5% annually</div>
+                                        <div>Risk-adjusted excess returns vs. buy-and-hold of the same security using CAPM.</div>
+                                        <div className="mt-2 text-teal-300 font-semibold">Excellent: &gt;5% annually</div>
+                                        <div className="text-teal-300 font-semibold">Good: &gt;0%</div>
                                         <div className="text-pink-300 font-semibold">Poor: &lt;0%</div>
-                                        <div className="mt-1 text-tuna-400">Positive = beat the market</div>
+                                        <div className="mt-1 text-tuna-400">Positive = skill-based outperformance</div>
+                                        <div className="text-tuna-400 text-xs italic">Note: Compared to buy-and-hold, not a market index</div>
                                     </>
                                 }
-                                footer="Excess return vs market"
+                                footer="Risk-adjusted excess return"
                             >
                                 <ColoredValue
                                     rule={{ type: "positive-negative", value: backtestResult.performanceMetrics.alpha }}
@@ -273,14 +274,14 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                                 title="Beta"
                                 tooltip={
                                     <>
-                                        <div>Measures market sensitivity and volatility.</div>
-                                        <div className="mt-2 text-teal-300 font-semibold">1.0 = moves with market</div>
-                                        <div className="text-yellow-300 font-semibold">&lt;1 = less volatile</div>
-                                        <div className="text-yellow-300 font-semibold">&gt;1 = more volatile</div>
+                                        <div>Measures strategy volatility vs. buy-and-hold of the same security.</div>
+                                        <div className="mt-2 text-teal-300 font-semibold">&lt;1 = less volatile than buy-and-hold</div>
+                                        <div className="text-yellow-300 font-semibold">1.0 = same volatility as buy-and-hold</div>
+                                        <div className="text-pink-300 font-semibold">&gt;1 = more volatile than buy-and-hold</div>
                                         <div className="mt-1 text-tuna-400">Lower beta = more stability</div>
                                     </>
                                 }
-                                footer="Market correlation"
+                                footer="Volatility vs. buy-and-hold"
                             >
                                 <ColoredValue
                                     rule={{
@@ -296,10 +297,11 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                                 title="Correlation"
                                 tooltip={
                                     <>
-                                        <div>How closely your strategy follows the market (-1 to 1).</div>
-                                        <div className="mt-2 text-teal-300 font-semibold">Low (&lt;0.3) = independent strategy</div>
-                                        <div className="text-pink-300 font-semibold">High (&gt;0.7) = follows market closely</div>
-                                        <div className="mt-1 text-tuna-400">Lower is better for diversification</div>
+                                        <div>How closely your strategy follows buy-and-hold of the same security (-1 to 1).</div>
+                                        <div className="mt-2 text-teal-300 font-semibold">Best: &lt;0.3 (independent strategy)</div>
+                                        <div className="text-yellow-300 font-semibold">Moderate: 0.3-0.7</div>
+                                        <div className="text-pink-300 font-semibold">Poor: &gt;0.7 (follows buy-and-hold closely)</div>
+                                        <div className="mt-1 text-tuna-400">Lower = more independent from buy-and-hold</div>
                                     </>
                                 }
                                 footer="-1 to 1 scale"
@@ -401,8 +403,8 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                                     tooltip={
                                         <>
                                             <div>Average winning trade divided by average losing trade.</div>
-                                            <div className="mt-2 text-teal-300 font-semibold">Good: &gt;1.5</div>
-                                            <div className="text-teal-300 font-semibold">Excellent: &gt;2.0</div>
+                                            <div className="mt-2 text-teal-300 font-semibold">Excellent: &gt;2.0</div>
+                                            <div className="text-teal-300 font-semibold">Good: &gt;1.5</div>
                                             <div className="text-yellow-300 font-semibold">Acceptable: 1.0-1.5</div>
                                             <div className="text-pink-300 font-semibold">Poor: &lt;1.0</div>
                                             <div className="mt-1 text-tuna-400">Higher is better</div>

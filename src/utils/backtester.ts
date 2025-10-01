@@ -111,6 +111,7 @@ export async function backtest(props: {
         portfolioData,
         history: history,
         performanceMetrics,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        symbol: symbol.toUpperCase()
     };
 }

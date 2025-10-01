@@ -15,7 +15,7 @@ export class AlpacaDataProvider extends StockDataProviderBase {
         // Convert bar resolution to Alpaca timeframe format
         const timeframe = this.getAlpacaTimeframe(barResolutionValue, barResolutionPeriod);
 
-        let url = `https://data.alpaca.markets/v2/stocks/${symbol}/bars?timeframe=${timeframe}&limit=1000&feed=iex&sort=asc&start=${startDate}`;
+        let url = `https://data.alpaca.markets/v2/stocks/${symbol}/bars?timeframe=${timeframe}&limit=1000&feed=iex&sort=asc&start=${startDate}&adjustment=split`;
 
         if (endDate) {
             const end = DateTime.fromISO(endDate, { zone: "America/New_York" }).endOf("day").toUTC().toISO();
