@@ -5,7 +5,9 @@ import type { ParsedError } from "../utils/errorParser";
 import { downloadCSV } from "../utils/csvExport";
 import { Pagination } from "./Pagination";
 import { ColoredValue } from "./ColoredValue";
+import { MetricCard } from "./MetricCard";
 import { DateTime } from "luxon";
+import { Download, X } from "lucide-react";
 
 interface ResultsDisplayProps {
     backtestResult: BacktestResult | null;
@@ -129,218 +131,300 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
                     {/* Summary Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="bg-tuna-600 rounded-lg p-4 ">
-                            <div className="text-sm text-tuna-300 mb-1 uppercase font-semibold">Starting Total Portfolio Value</div>
-                            <div className="text-2xl font-semibold tracking-wide">
-                                ${backtestResult.portfolioData.startingCash.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </div>
-                        </div>
+                        <MetricCard title="Starting Total Portfolio Value">
+                            ${backtestResult.portfolioData.startingCash.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </MetricCard>
 
-                        <div className="bg-tuna-600 rounded-lg p-4 ">
-                            <div className="text-sm text-tuna-300 mb-1 uppercase font-semibold">Final Total Portfolio Value</div>
-                            <div className="text-2xl font-semibold tracking-wide">{currency(backtestResult.portfolioData.portfolioValue).format()}</div>
-                        </div>
+                        <MetricCard title="Final Total Portfolio Value">{currency(backtestResult.portfolioData.portfolioValue).format()}</MetricCard>
 
-                        <div className="bg-tuna-600 rounded-lg p-4 ">
-                            <div className="text-sm text-tuna-300 mb-1 uppercase font-semibold">Market Performance</div>
-                            <div className="text-2xl font-semibold tracking-wide">
-                                <ColoredValue
-                                    rule={{ type: "positive-negative", value: backtestResult.portfolioData.stockPercentChange }}
-                                    format={v => `${v >= 0 ? "+" : ""}${(v * 100).toFixed(2)}%`}
-                                />
-                            </div>
-                        </div>
+                        <MetricCard title="Market Performance">
+                            <ColoredValue
+                                rule={{ type: "positive-negative", value: backtestResult.portfolioData.stockPercentChange }}
+                                format={v => `${v >= 0 ? "+" : ""}${(v * 100).toFixed(2)}%`}
+                            />
+                        </MetricCard>
 
-                        <div className="bg-tuna-600 rounded-lg p-4 ">
-                            <div className="text-sm text-tuna-300 mb-1 uppercase font-semibold">Strategy Performance</div>
-                            <div className="text-2xl font-semibold tracking-wide">
-                                <ColoredValue
-                                    rule={{ type: "positive-negative", value: backtestResult.portfolioData.portfolioPercentChange }}
-                                    format={v => `${v >= 0 ? "+" : ""}${(v * 100).toFixed(2)}%`}
-                                />
-                            </div>
-                        </div>
+                        <MetricCard title="Strategy Performance">
+                            <ColoredValue
+                                rule={{ type: "positive-negative", value: backtestResult.portfolioData.portfolioPercentChange }}
+                                format={v => `${v >= 0 ? "+" : ""}${(v * 100).toFixed(2)}%`}
+                            />
+                        </MetricCard>
                     </div>
 
                     {/* Performance Metrics */}
-                    <div className="mt-6 bg-tuna-700 rounded-lg overflow-hidden">
-                        <div className="px-4 py-3 border-b border-tuna-600">
-                            <h4 className="text-md font-semibold">Performance Analysis</h4>
+                    <div className="mt-6 mb-6 pb-4 border-b border-tuna-600">
+                        <div>
+                            <h3 className="text-lg font-semibold">Performance Analysis</h3>
                             <p className="text-sm text-tuna-400 mt-1">Advanced metrics comparing your strategy to market performance</p>
                         </div>
+                    </div>
 
-                        <div className="p-4">
-                            {/* Risk-Adjusted Returns */}
-                            <div className="mb-6">
-                                <h5 className="text-sm font-semibold text-tuna-300 mb-3 uppercase tracking-wider">Risk-Adjusted Returns</h5>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    <div className="bg-tuna-600 rounded-lg p-3">
-                                        <div className="text-xs text-tuna-400 mb-1">Sharpe Ratio</div>
-                                        <div className="text-lg font-semibold">
-                                            <ColoredValue
-                                                rule={{ type: "threshold", value: backtestResult.performanceMetrics.sharpeRatio, goodThreshold: 1, okThreshold: 0 }}
-                                                format={v => v.toFixed(2)}
-                                            />
-                                        </div>
-                                        <div className="text-xs text-tuna-400 mt-1">Higher is better</div>
-                                    </div>
+                    {/* Risk-Adjusted Returns */}
+                    <div className="mb-6">
+                        <h5 className="text-sm font-semibold text-tuna-300 mb-3 uppercase tracking-wider">Risk-Adjusted Returns</h5>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <MetricCard
+                                title="Sharpe Ratio"
+                                tooltip={
+                                    <>
+                                        <div>Measures risk-adjusted returns per unit of risk taken.</div>
+                                        <div className="mt-2 text-teal-300 font-semibold">Good: &gt;1</div>
+                                        <div className="text-teal-300 font-semibold">Excellent: &gt;2</div>
+                                        <div className="text-yellow-300 font-semibold">Acceptable: 0-1</div>
+                                        <div className="text-pink-300 font-semibold">Poor: &lt;0</div>
+                                        <div className="mt-1 text-tuna-400">Higher is better</div>
+                                    </>
+                                }
+                                footer="Higher is better"
+                            >
+                                <ColoredValue
+                                    rule={{ type: "threshold", value: backtestResult.performanceMetrics.sharpeRatio, goodThreshold: 1, okThreshold: 0 }}
+                                    format={v => v.toFixed(2)}
+                                />
+                            </MetricCard>
 
-                                    <div className="bg-tuna-600 rounded-lg p-3">
-                                        <div className="text-xs text-tuna-400 mb-1">Sortino Ratio</div>
-                                        <div className="text-lg font-semibold">
-                                            <ColoredValue
-                                                rule={{ type: "threshold", value: backtestResult.performanceMetrics.sortinoRatio, goodThreshold: 1, okThreshold: 0 }}
-                                                format={v => (isFinite(v) ? v.toFixed(2) : "∞")}
-                                            />
-                                        </div>
-                                        <div className="text-xs text-tuna-400 mt-1">Higher is better</div>
-                                    </div>
+                            <MetricCard
+                                title="Sortino Ratio"
+                                tooltip={
+                                    <>
+                                        <div>Similar to Sharpe but only penalizes downside volatility.</div>
+                                        <div className="mt-2 text-teal-300 font-semibold">Good: &gt;1</div>
+                                        <div className="text-teal-300 font-semibold">Excellent: &gt;2</div>
+                                        <div className="text-yellow-300 font-semibold">Acceptable: 0-1</div>
+                                        <div className="text-pink-300 font-semibold">Poor: &lt;0</div>
+                                        <div className="mt-1 text-tuna-400">Higher is better</div>
+                                    </>
+                                }
+                                footer="Higher is better"
+                            >
+                                <ColoredValue
+                                    rule={{ type: "threshold", value: backtestResult.performanceMetrics.sortinoRatio, goodThreshold: 1, okThreshold: 0 }}
+                                    format={v => (isFinite(v) ? v.toFixed(2) : "∞")}
+                                />
+                            </MetricCard>
 
-                                    <div className="bg-tuna-600 rounded-lg p-3">
-                                        <div className="text-xs text-tuna-400 mb-1">Information Ratio</div>
-                                        <div className="text-lg font-semibold">
-                                            <ColoredValue
-                                                rule={{ type: "threshold", value: backtestResult.performanceMetrics.informationRatio, goodThreshold: 0.5, okThreshold: 0 }}
-                                                format={v => v.toFixed(2)}
-                                            />
-                                        </div>
-                                        <div className="text-xs text-tuna-400 mt-1">Higher is better</div>
-                                    </div>
+                            <MetricCard
+                                title="Information Ratio"
+                                tooltip={
+                                    <>
+                                        <div>Measures excess returns (alpha) per unit of active risk.</div>
+                                        <div className="mt-2 text-teal-300 font-semibold">Good: &gt;0.5</div>
+                                        <div className="text-teal-300 font-semibold">Excellent: &gt;1</div>
+                                        <div className="text-yellow-300 font-semibold">Acceptable: 0-0.5</div>
+                                        <div className="text-pink-300 font-semibold">Poor: &lt;0</div>
+                                        <div className="mt-1 text-tuna-400">Higher is better</div>
+                                    </>
+                                }
+                                footer="Higher is better"
+                            >
+                                <ColoredValue
+                                    rule={{ type: "threshold", value: backtestResult.performanceMetrics.informationRatio, goodThreshold: 0.5, okThreshold: 0 }}
+                                    format={v => v.toFixed(2)}
+                                />
+                            </MetricCard>
 
-                                    <div className="bg-tuna-600 rounded-lg p-3">
-                                        <div className="text-xs text-tuna-400 mb-1">Calmar Ratio</div>
-                                        <div className="text-lg font-semibold">
-                                            <ColoredValue
-                                                rule={{ type: "threshold", value: backtestResult.performanceMetrics.calmarRatio, goodThreshold: 1, okThreshold: 0 }}
-                                                format={v => v.toFixed(2)}
-                                            />
-                                        </div>
-                                        <div className="text-xs text-tuna-400 mt-1">Higher is better</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Market Comparison */}
-                            <div className="mb-6">
-                                <h5 className="text-sm font-semibold text-tuna-300 mb-3 uppercase tracking-wider">Market Comparison</h5>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    <div className="bg-tuna-600 rounded-lg p-3">
-                                        <div className="text-xs text-tuna-400 mb-1">Alpha</div>
-                                        <div className="text-lg font-semibold">
-                                            <ColoredValue
-                                                rule={{ type: "positive-negative", value: backtestResult.performanceMetrics.alpha }}
-                                                format={v => `${v >= 0 ? "+" : ""}${(v * 100).toFixed(2)}%`}
-                                            />
-                                        </div>
-                                        <div className="text-xs text-tuna-400 mt-1">Excess return vs market</div>
-                                    </div>
-
-                                    <div className="bg-tuna-600 rounded-lg p-3">
-                                        <div className="text-xs text-tuna-400 mb-1">Beta</div>
-                                        <div className="text-lg font-semibold">
-                                            <ColoredValue
-                                                rule={{
-                                                    type: "custom",
-                                                    value: backtestResult.performanceMetrics.beta,
-                                                    getColor: v => (Math.abs(v - 1) < 0.2 ? "text-yellow-300" : v > 1 ? "text-pink-300" : "text-teal-300")
-                                                }}
-                                                format={v => v.toFixed(2)}
-                                            />
-                                        </div>
-                                        <div className="text-xs text-tuna-400 mt-1">Market correlation</div>
-                                    </div>
-
-                                    <div className="bg-tuna-600 rounded-lg p-3">
-                                        <div className="text-xs text-tuna-400 mb-1">Correlation</div>
-                                        <div className="text-lg font-semibold">
-                                            <ColoredValue
-                                                rule={{
-                                                    type: "custom",
-                                                    value: backtestResult.performanceMetrics.correlation,
-                                                    getColor: v => (Math.abs(v) > 0.7 ? "text-pink-300" : Math.abs(v) > 0.3 ? "text-yellow-300" : "text-teal-300")
-                                                }}
-                                                format={v => v.toFixed(2)}
-                                            />
-                                        </div>
-                                        <div className="text-xs text-tuna-400 mt-1">-1 to 1 scale</div>
-                                    </div>
-
-                                    <div className="bg-tuna-600 rounded-lg p-3">
-                                        <div className="text-xs text-tuna-400 mb-1">Volatility</div>
-                                        <div className="text-lg font-semibold">
-                                            <ColoredValue
-                                                rule={{
-                                                    type: "custom",
-                                                    value: backtestResult.performanceMetrics.volatility,
-                                                    getColor: v => (v < backtestResult.performanceMetrics.marketVolatility ? "text-teal-300" : "text-pink-300")
-                                                }}
-                                                format={v => `${(v * 100).toFixed(1)}%`}
-                                            />
-                                        </div>
-                                        <div className="text-xs text-tuna-400 mt-1">vs Market: {(backtestResult.performanceMetrics.marketVolatility * 100).toFixed(1)}%</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Risk Metrics */}
-                            <div className="mb-6">
-                                <h5 className="text-sm font-semibold text-tuna-300 mb-3 uppercase tracking-wider">Risk Metrics</h5>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="bg-tuna-600 rounded-lg p-3">
-                                        <div className="text-xs text-tuna-400 mb-1">Maximum Drawdown</div>
-                                        <div className="text-lg font-semibold text-pink-300">-{(backtestResult.performanceMetrics.maxDrawdownPercent * 100).toFixed(2)}%</div>
-                                        <div className="text-xs text-tuna-400 mt-1">
-                                            ${backtestResult.performanceMetrics.maxDrawdown.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Trade Analysis */}
-                            {backtestResult.performanceMetrics.totalTrades > 0 && (
-                                <div>
-                                    <h5 className="text-sm font-semibold text-tuna-300 mb-3 uppercase tracking-wider">Trade Analysis</h5>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        <div className="bg-tuna-600 rounded-lg p-3">
-                                            <div className="text-xs text-tuna-400 mb-1">Win Rate</div>
-                                            <div className="text-lg font-semibold">
-                                                <ColoredValue
-                                                    rule={{ type: "threshold", value: backtestResult.performanceMetrics.winRate, goodThreshold: 0.6, okThreshold: 0.4 }}
-                                                    format={v => `${(v * 100).toFixed(1)}%`}
-                                                />
-                                            </div>
-                                            <div className="text-xs text-tuna-400 mt-1">
-                                                {backtestResult.performanceMetrics.winningTrades}/{backtestResult.performanceMetrics.totalTrades} trades
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-tuna-600 rounded-lg p-3">
-                                            <div className="text-xs text-tuna-400 mb-1">Payoff Ratio</div>
-                                            <div className="text-lg font-semibold">
-                                                <ColoredValue
-                                                    rule={{ type: "threshold", value: backtestResult.performanceMetrics.payoffRatio, goodThreshold: 2, okThreshold: 1 }}
-                                                    format={v => (isFinite(v) ? v.toFixed(2) : "∞")}
-                                                />
-                                            </div>
-                                            <div className="text-xs text-tuna-400 mt-1">Avg win / Avg loss</div>
-                                        </div>
-
-                                        <div className="bg-tuna-600 rounded-lg p-3">
-                                            <div className="text-xs text-tuna-400 mb-1">Average Win</div>
-                                            <div className="text-lg font-semibold text-teal-300">+{(backtestResult.performanceMetrics.averageWin * 100).toFixed(2)}%</div>
-                                            <div className="text-xs text-tuna-400 mt-1">Per winning trade</div>
-                                        </div>
-
-                                        <div className="bg-tuna-600 rounded-lg p-3">
-                                            <div className="text-xs text-tuna-400 mb-1">Average Loss</div>
-                                            <div className="text-lg font-semibold text-pink-300">-{(backtestResult.performanceMetrics.averageLoss * 100).toFixed(2)}%</div>
-                                            <div className="text-xs text-tuna-400 mt-1">Per losing trade</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                            <MetricCard
+                                title="Calmar Ratio"
+                                tooltip={
+                                    <>
+                                        <div>Annual return divided by maximum drawdown.</div>
+                                        <div className="mt-2 text-teal-300 font-semibold">Good: &gt;1</div>
+                                        <div className="text-teal-300 font-semibold">Excellent: &gt;3</div>
+                                        <div className="text-yellow-300 font-semibold">Acceptable: 0-1</div>
+                                        <div className="text-pink-300 font-semibold">Poor: &lt;0</div>
+                                        <div className="mt-1 text-tuna-400">Higher is better</div>
+                                    </>
+                                }
+                                footer="Higher is better"
+                            >
+                                <ColoredValue
+                                    rule={{ type: "threshold", value: backtestResult.performanceMetrics.calmarRatio, goodThreshold: 1, okThreshold: 0 }}
+                                    format={v => v.toFixed(2)}
+                                />
+                            </MetricCard>
                         </div>
                     </div>
+
+                    {/* Market Comparison */}
+                    <div className="mb-6">
+                        <h5 className="text-sm font-semibold text-tuna-300 mb-3 uppercase tracking-wider">Market Comparison</h5>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <MetricCard
+                                title="Alpha"
+                                tooltip={
+                                    <>
+                                        <div>Excess returns beyond what the market delivered.</div>
+                                        <div className="mt-2 text-teal-300 font-semibold">Good: &gt;0%</div>
+                                        <div className="text-teal-300 font-semibold">Excellent: &gt;5% annually</div>
+                                        <div className="text-pink-300 font-semibold">Poor: &lt;0%</div>
+                                        <div className="mt-1 text-tuna-400">Positive = beat the market</div>
+                                    </>
+                                }
+                                footer="Excess return vs market"
+                            >
+                                <ColoredValue
+                                    rule={{ type: "positive-negative", value: backtestResult.performanceMetrics.alpha }}
+                                    format={v => `${v >= 0 ? "+" : ""}${(v * 100).toFixed(2)}%`}
+                                />
+                            </MetricCard>
+
+                            <MetricCard
+                                title="Beta"
+                                tooltip={
+                                    <>
+                                        <div>Measures market sensitivity and volatility.</div>
+                                        <div className="mt-2 text-teal-300 font-semibold">1.0 = moves with market</div>
+                                        <div className="text-yellow-300 font-semibold">&lt;1 = less volatile</div>
+                                        <div className="text-yellow-300 font-semibold">&gt;1 = more volatile</div>
+                                        <div className="mt-1 text-tuna-400">Lower beta = more stability</div>
+                                    </>
+                                }
+                                footer="Market correlation"
+                            >
+                                <ColoredValue
+                                    rule={{
+                                        type: "custom",
+                                        value: backtestResult.performanceMetrics.beta,
+                                        getColor: v => (Math.abs(v - 1) < 0.2 ? "text-yellow-300" : v > 1 ? "text-pink-300" : "text-teal-300")
+                                    }}
+                                    format={v => v.toFixed(2)}
+                                />
+                            </MetricCard>
+
+                            <MetricCard
+                                title="Correlation"
+                                tooltip={
+                                    <>
+                                        <div>How closely your strategy follows the market (-1 to 1).</div>
+                                        <div className="mt-2 text-teal-300 font-semibold">Low (&lt;0.3) = independent strategy</div>
+                                        <div className="text-pink-300 font-semibold">High (&gt;0.7) = follows market closely</div>
+                                        <div className="mt-1 text-tuna-400">Lower is better for diversification</div>
+                                    </>
+                                }
+                                footer="-1 to 1 scale"
+                            >
+                                <ColoredValue
+                                    rule={{
+                                        type: "custom",
+                                        value: backtestResult.performanceMetrics.correlation,
+                                        getColor: v => (Math.abs(v) > 0.7 ? "text-pink-300" : Math.abs(v) > 0.3 ? "text-yellow-300" : "text-teal-300")
+                                    }}
+                                    format={v => v.toFixed(2)}
+                                />
+                            </MetricCard>
+
+                            <MetricCard
+                                title="Volatility"
+                                tooltip={
+                                    <>
+                                        <div>Standard deviation of returns. Measures price swings and uncertainty.</div>
+                                        <div className="mt-2 text-teal-300 font-semibold">Lower than market = good</div>
+                                        <div className="text-pink-300 font-semibold">Higher than market = more risk</div>
+                                        <div className="mt-1 text-tuna-400">Market: {(backtestResult.performanceMetrics.marketVolatility * 100).toFixed(1)}%</div>
+                                    </>
+                                }
+                                footer={`vs Market: ${(backtestResult.performanceMetrics.marketVolatility * 100).toFixed(1)}%`}
+                            >
+                                <ColoredValue
+                                    rule={{
+                                        type: "custom",
+                                        value: backtestResult.performanceMetrics.volatility,
+                                        getColor: v => (v < backtestResult.performanceMetrics.marketVolatility ? "text-teal-300" : "text-pink-300")
+                                    }}
+                                    format={v => `${(v * 100).toFixed(1)}%`}
+                                />
+                            </MetricCard>
+                        </div>
+                    </div>
+
+                    {/* Risk Metrics */}
+                    <div className="mb-6">
+                        <h5 className="text-sm font-semibold text-tuna-300 mb-3 uppercase tracking-wider">Risk Metrics</h5>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <MetricCard
+                                title="Maximum Drawdown"
+                                tooltip={
+                                    <>
+                                        <div>Largest peak-to-trough decline. Shows worst-case loss from a high point.</div>
+                                        <div className="mt-2 text-teal-300 font-semibold">Good: &lt;10%</div>
+                                        <div className="text-yellow-300 font-semibold">Acceptable: &lt;20%</div>
+                                        <div className="text-pink-300 font-semibold">Concerning: &gt;20%</div>
+                                        <div className="mt-1 text-tuna-400">Lower is better</div>
+                                    </>
+                                }
+                                footer={`$${backtestResult.performanceMetrics.maxDrawdown.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                            >
+                                <ColoredValue
+                                    rule={{
+                                        type: "inverted-threshold",
+                                        value: backtestResult.performanceMetrics.maxDrawdownPercent,
+                                        goodThreshold: 0.1,
+                                        okThreshold: 0.2
+                                    }}
+                                    format={v => `-${(v * 100).toFixed(2)}%`}
+                                />
+                            </MetricCard>
+                        </div>
+                    </div>
+
+                    {/* Trade Analysis */}
+                    {backtestResult.performanceMetrics.totalTrades > 0 && (
+                        <div className="mb-6">
+                            <h5 className="text-sm font-semibold text-tuna-300 mb-3 uppercase tracking-wider">Trade Analysis</h5>
+                            <p className="text-xs text-tuna-400 mb-3 italic">
+                                Note: Each sell transaction is analyzed using average cost basis. Unrealized positions (still holding) are not included.
+                            </p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <MetricCard
+                                    title="Win Rate"
+                                    footer={`${backtestResult.performanceMetrics.winningTrades}/${backtestResult.performanceMetrics.totalTrades} trades`}
+                                    tooltip={
+                                        <>
+                                            <div>Percentage of trades that were profitable.</div>
+                                            <div className="mt-2 text-teal-300 font-semibold">Good: &gt;60%</div>
+                                            <div className="text-yellow-300 font-semibold">Acceptable: 40-60%</div>
+                                            <div className="text-pink-300 font-semibold">Poor: &lt;40%</div>
+                                            <div className="mt-1 text-tuna-400">Higher is better</div>
+                                        </>
+                                    }
+                                >
+                                    <ColoredValue
+                                        rule={{ type: "threshold", value: backtestResult.performanceMetrics.winRate, goodThreshold: 0.6, okThreshold: 0.4 }}
+                                        format={v => `${(v * 100).toFixed(1)}%`}
+                                    />
+                                </MetricCard>
+
+                                <MetricCard
+                                    title="Payoff Ratio"
+                                    footer="Avg win / Avg loss"
+                                    tooltip={
+                                        <>
+                                            <div>Average winning trade divided by average losing trade.</div>
+                                            <div className="mt-2 text-teal-300 font-semibold">Good: &gt;1.5</div>
+                                            <div className="text-teal-300 font-semibold">Excellent: &gt;2.0</div>
+                                            <div className="text-yellow-300 font-semibold">Acceptable: 1.0-1.5</div>
+                                            <div className="text-pink-300 font-semibold">Poor: &lt;1.0</div>
+                                            <div className="mt-1 text-tuna-400">Higher is better</div>
+                                        </>
+                                    }
+                                >
+                                    <ColoredValue
+                                        rule={{ type: "threshold", value: backtestResult.performanceMetrics.payoffRatio, goodThreshold: 1.5, okThreshold: 1 }}
+                                        format={v => (isFinite(v) ? v.toFixed(2) : "∞")}
+                                    />
+                                </MetricCard>
+
+                                <MetricCard title="Average Win" footer="Per winning trade">
+                                    <span className="text-teal-300">+{(backtestResult.performanceMetrics.averageWin * 100).toFixed(2)}%</span>
+                                </MetricCard>
+
+                                <MetricCard title="Average Loss" footer="Per losing trade">
+                                    <span className="text-pink-300">-{(backtestResult.performanceMetrics.averageLoss * 100).toFixed(2)}%</span>
+                                </MetricCard>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Detailed Results Table */}
                     <div className="mt-6 bg-tuna-700 rounded-lg  overflow-hidden">
@@ -356,13 +440,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                                         className="px-3 py-1 text-xs bg-teal-400 text-tuna-900 rounded hover:bg-teal-700 transition-colors flex items-center space-x-1 "
                                         type="button"
                                     >
-                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                            <path
-                                                fillRule="evenodd"
-                                                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                                                clipRule="evenodd"
-                                            />
-                                        </svg>
+                                        <Download className="w-3 h-3" />
                                         <span>Download CSV</span>
                                     </button>
                                     <button
@@ -527,13 +605,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                             )}
                         </div>
                         <button onClick={onClearError} className="ml-3 text-pink-300 hover:text-pink-300  flex-shrink-0">
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                    fillRule="evenodd"
-                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                    clipRule="evenodd"
-                                />
-                            </svg>
+                            <X className="w-4 h-4" />
                         </button>
                     </div>
                 </div>

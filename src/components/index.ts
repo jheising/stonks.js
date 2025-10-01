@@ -6,3 +6,5 @@ export { ResultsDisplay } from "./ResultsDisplay";
 export { VersionModal } from "./VersionModal";
 export { Pagination } from "./Pagination";
 export { DataProviderSelector } from "./DataProviderSelector";
+export { Tooltip, InfoIcon } from "./Tooltip";
+export { MetricCard } from "./MetricCard";

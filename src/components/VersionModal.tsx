@@ -1,6 +1,7 @@
 import React from "react";
 import type { CodeVersion } from "../types";
 import { getCodeVersions } from "../utils/codeVersions";
+import { X } from "lucide-react";
 
 interface VersionModalProps {
     show: boolean;
@@ -19,9 +20,7 @@ export const VersionModal: React.FC<VersionModalProps> = ({ show, onClose, onLoa
                 <div className="flex justify-between items-center p-6 border-b">
                     <h3 className="text-lg font-semibold">Code Versions</h3>
                     <button onClick={onClose} className=" hover:text-tuna-600 " type="button">
-                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <X className="w-6 h-6" />
                     </button>
                 </div>
 

@@ -265,6 +265,7 @@ function calculateMaxDrawdown(
 
 /**
  * Calculate trade-related metrics
+ * Uses average cost basis method - each sell is a trade compared to average purchase price
  */
 function calculateTradeMetrics(history: StrategyHistory[]): {
     winRate: number;
@@ -276,48 +277,44 @@ function calculateTradeMetrics(history: StrategyHistory[]): {
     averageLoss: number;
 } {
     const trades: number[] = [];
-    let isInTrade = false;
-    let totalBuyCost = 0;
-    let totalSellValue = 0;
-    let sharesInTrade = 0;
+    let totalSharesOwned = 0;
+    let totalCostBasis = 0; // Total amount paid for all shares currently owned
 
     for (let i = 0; i < history.length; i++) {
         const item = history[i];
-        const prevSharesOwned = i > 0 ? history[i - 1].portfolioSnapshot.sharesOwned : 0;
-        const currentSharesOwned = item.portfolioSnapshot.sharesOwned;
         const result = item.strategyResult;
-
         const sharesChanged = result.changeInShares || 0;
 
-        // Start of a new trade
-        if (!isInTrade && sharesChanged > 0) {
-            isInTrade = true;
-            totalBuyCost = 0;
-            totalSellValue = 0;
-            sharesInTrade = 0;
-        }
+        if (sharesChanged === 0) continue;
 
-        if (isInTrade) {
-            const price = result.price || item.bar.close;
-            if (sharesChanged > 0) {
-                // Buy
-                totalBuyCost += sharesChanged * price;
-                sharesInTrade += sharesChanged;
-            } else if (sharesChanged < 0) {
-                // Sell
-                totalSellValue += Math.abs(sharesChanged) * price;
-            }
+        const price = result.price || item.bar.close;
 
-            // End of the trade (all shares that were part of this trade cycle are sold)
-            if (currentSharesOwned === 0 && prevSharesOwned > 0) {
-                if (totalBuyCost > 0) {
-                    const profit = totalSellValue - totalBuyCost;
-                    const tradeReturn = profit / totalBuyCost;
-                    trades.push(tradeReturn);
+        if (sharesChanged > 0) {
+            // BUY: Add to position and cost basis
+            totalCostBasis += sharesChanged * price;
+            totalSharesOwned += sharesChanged;
+        } else if (sharesChanged < 0) {
+            // SELL: Calculate profit/loss based on average cost
+            const sharesSold = Math.abs(sharesChanged);
+
+            if (totalSharesOwned > 0) {
+                const averageCostPerShare = totalCostBasis / totalSharesOwned;
+                const costOfSharesSold = sharesSold * averageCostPerShare;
+                const revenueFromSale = sharesSold * price;
+
+                const profit = revenueFromSale - costOfSharesSold;
+                const tradeReturn = profit / costOfSharesSold;
+                trades.push(tradeReturn);
+
+                // Update position
+                totalCostBasis -= costOfSharesSold;
+                totalSharesOwned -= sharesSold;
+
+                // Handle floating point precision
+                if (totalSharesOwned < 0.0001) {
+                    totalSharesOwned = 0;
+                    totalCostBasis = 0;
                 }
-
-                // Reset for next trade
-                isInTrade = false;
             }
         }
     }
