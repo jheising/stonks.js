@@ -1,12 +1,9 @@
 import currency from 'currency.js';
 
 export const MathUtils = {
-  percentChange: (newValue: number, oldValue: number): number => {
+  percentChange: (newValue: number, oldValue: number, returnAsPercentage: boolean = false): number => {
     if (oldValue === 0) return 0;
-    // Use native JavaScript for percentage calculations to preserve full precision
-    // Currency.js is designed for currency values and rounds to 2 decimal places,
-    // which truncates percentage precision
-    return ((newValue - oldValue) / oldValue) * 100;
+    return ((newValue - oldValue) / oldValue) * (returnAsPercentage ? 100 : 1);
   },
 
   // Helper function to create currency objects with consistent precision

@@ -147,14 +147,14 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
             <div className="bg-tuna-600 rounded-lg p-4 ">
               <div className="text-sm text-tuna-300 mb-1 uppercase font-semibold">Market Performance</div>
               <div className={`text-2xl font-semibold tracking-wide ${backtestResult.portfolioData.stockPercentChange >= 0 ? 'text-teal-300' : 'text-pink-300'}`}>
-                {backtestResult.portfolioData.stockPercentChange >= 0 ? '+' : ''}{backtestResult.portfolioData.stockPercentChange.toFixed(2)}%
+                {backtestResult.portfolioData.stockPercentChange >= 0 ? '+' : ''}{(backtestResult.portfolioData.stockPercentChange * 100).toFixed(2)}%
               </div>
             </div>
 
             <div className="bg-tuna-600 rounded-lg p-4 ">
               <div className="text-sm text-tuna-300 mb-1 uppercase font-semibold">Strategy Performance</div>
               <div className={`text-2xl font-semibold tracking-wide ${backtestResult.portfolioData.portfolioPercentChange >= 0 ? 'text-teal-300' : 'text-pink-300'}`}>
-                {backtestResult.portfolioData.portfolioPercentChange >= 0 ? '+' : ''}{backtestResult.portfolioData.portfolioPercentChange.toFixed(2)}%
+                {backtestResult.portfolioData.portfolioPercentChange >= 0 ? '+' : ''}{(backtestResult.portfolioData.portfolioPercentChange * 100).toFixed(2)}%
               </div>
             </div>
           </div>

@@ -15,6 +15,8 @@ interface CodeEditorProps {
   isCodeValid: boolean
   errorInfo?: ParsedError | null
   onValidationChange?: (hasMonacoErrors: boolean, firstError?: { line: number; column: number; message: string }) => void
+  isMaximized?: boolean
+  onToggleMaximize?: () => void
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -24,7 +26,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   codeSaved,
   isCodeValid,
   errorInfo,
-  onValidationChange
+  onValidationChange,
+  isMaximized = false,
+  onToggleMaximize
 }) => {
   // Internal state management for instructions toggle
   const [showInstructions, setShowInstructions] = useLocalStorage(STORAGE_KEYS.SHOW_INSTRUCTIONS, true)
@@ -131,8 +135,15 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     }
   }, [errorInfo])
 
-  return (
-    <div>
+  // Container component with conditional fullscreen styling
+  const Container = isMaximized ? 'div' : React.Fragment
+  const containerProps = isMaximized ? {
+    className: "fixed inset-0 z-50 bg-tuna-800 flex flex-col p-6",
+    style: { zIndex: 9999 }
+  } : {}
+
+  const content = (
+    <div className={isMaximized ? "flex flex-col h-full" : ""}>
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-4">
           <button
@@ -149,6 +160,30 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           >
             Load Version
           </button>
+          {onToggleMaximize && (
+            <button
+              onClick={onToggleMaximize}
+              className="px-3 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center space-x-1"
+              type="button"
+              title={isMaximized ? 'Minimize Editor' : 'Maximize Editor'}
+            >
+              {isMaximized ? (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9l6 6m0-6l-6 6" />
+                  </svg>
+                  <span>Minimize</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                  <span>Maximize</span>
+                </>
+              )}
+            </button>
+          )}
           <div className="text-xs text-tuna-500">
             {codeSaved && (
               <span className="flex items-center space-x-1">
@@ -220,9 +255,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
         </div>
       )}
 
-      <div className="border border-tuna-300 rounded-md overflow-hidden relative" style={{ zIndex: 1 }}>
+      <div className={`border border-tuna-300 rounded-md overflow-hidden relative ${isMaximized ? 'flex-1' : ''}`} style={{ zIndex: 1 }}>
         <Editor
-          height="500px"
+          height={isMaximized ? "100%" : "500px"}
           defaultLanguage="typescript"
           defaultPath="strategy.ts"
           value={code}
@@ -319,14 +354,22 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           }}
         />
       </div>
-      <div className="text-xs text-tuna-500 mt-3">
-        <div className="flex items-center space-x-1">
-          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-          </svg>
-          <span>Your strategy code is stored securely in your browser's local storage</span>
+      {!isMaximized && (
+        <div className="text-xs text-tuna-500 mt-3">
+          <div className="flex items-center space-x-1">
+            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+            <span>Your strategy code is stored securely in your browser's local storage</span>
+          </div>
         </div>
-      </div>
+      )}
     </div>
+  )
+
+  return (
+    <Container {...containerProps}>
+      {content}
+    </Container>
   )
 }

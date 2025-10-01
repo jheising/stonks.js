@@ -8,17 +8,26 @@ export interface Bar {
 }
 
 export interface PortfolioData {
+  // The amount of shares currently owned.
   sharesOwned: number;
+  // The amount of cash available to the portfolio.
   availableCash: number;
+  // The amount of cash the portfolio started with.
   startingCash: number;
+  // The current value of the portfolio: cash + sharesOwned * current price
   portfolioValue: number;
+  // The percent change of the portfolio value from the starting cash.
   portfolioPercentChange: number;
+  // The percent change of the current stock price from the starting price.
   stockPercentChange: number;
 }
 
 export interface StrategyFunctionResult {
+  // Amount of shares to buy or sell. A positive number means buy, a negative number means sell. If not set, the strategy will hold the position.
   changeInShares?: number;
+  // Price at which the shares were bought or sold. If not set, the strategy will use the next bar's open price.
   price?: number;
+  // Anything put here will be included in the backtesting results as well as the CSV export
   meta: Record<string, any>;
 }
 
@@ -36,13 +45,15 @@ export interface StrategyFunctionData {
   nextBar: Bar;
   currentPortfolio: PortfolioData;
   history: StrategyHistory[];
+  // Persistent storage for custom data between executions of the strategy
   scratchpad: Record<string, any>;
 }
 
 export interface BacktestResult {
   portfolioData: PortfolioData;
   history: Array<StrategyHistory>;
-  timestamp: string; // ISO string of when the backtest was run
+   // ISO string of when the backtest was run
+  timestamp: string;
 }
 
 export interface BacktestMarketDataProps {

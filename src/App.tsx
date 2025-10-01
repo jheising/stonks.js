@@ -72,6 +72,9 @@ function App() {
   // Abort controller for cancelling running backtests
   const abortControllerRef = useRef<AbortController | null>(null)
   const [showVersionModal, setShowVersionModal] = useState(false)
+  
+  // Code editor maximize state
+  const [isCodeEditorMaximized, setIsCodeEditorMaximized] = useState(false)
 
   // Clear messages when form inputs change (but keep results visible)
   const clearMessages = () => {
@@ -87,6 +90,11 @@ function App() {
   const loadCodeVersion = (version: CodeVersion) => {
     setCode(version.code)
     setShowVersionModal(false)
+  }
+
+  // Toggle code editor maximize state
+  const toggleCodeEditorMaximize = () => {
+    setIsCodeEditorMaximized(!isCodeEditorMaximized)
   }
 
   const handleEditorChange = (value: string | undefined) => {
@@ -262,6 +270,8 @@ function App() {
               isCodeValid={isCodeValid}
               errorInfo={combinedErrorInfo}
               onValidationChange={handleValidationChange}
+              isMaximized={isCodeEditorMaximized}
+              onToggleMaximize={toggleCodeEditorMaximize}
             />
           </CollapseableBox>
 
