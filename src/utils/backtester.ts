@@ -112,6 +112,11 @@ export async function backtest(props: {
         history: history,
         performanceMetrics,
         timestamp: new Date().toISOString(),
-        symbol: symbol.toUpperCase()
+        symbol: symbol.toUpperCase(),
+        startDate,
+        endDate: endDate || new Date().toISOString(),
+        startingAmount,
+        barResolutionValue,
+        barResolutionPeriod
     };
 }

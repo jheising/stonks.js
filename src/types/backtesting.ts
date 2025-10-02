@@ -87,6 +87,12 @@ export interface BacktestResult {
     timestamp: string;
     // The stock symbol that was used in this backtest
     symbol: string;
+    // Backtest parameters
+    startDate: string;
+    endDate: string;
+    startingAmount: number;
+    barResolutionValue: string;
+    barResolutionPeriod: string;
 }
 
 export interface BacktestMarketDataProps {

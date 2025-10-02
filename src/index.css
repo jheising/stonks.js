@@ -15,6 +15,7 @@
 }
 
 /* Apply Roboto Mono globally */
+html,
 body {
     font-family: "Barlow", sans-serif;
     @apply text-tuna-100 bg-tuna-900 antialiased;

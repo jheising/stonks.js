@@ -4,6 +4,9 @@
   # 📈 stonks.js
   
   A modern, web-based backtesting platform for stock trading strategies. Build, test, and analyze your trading algorithms with real market data from Alpaca Markets.
+
+### 🌐 [Try the Live Demo →](https://jheising.github.io/stonks.js)
+
 </div>
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)
@@ -14,6 +17,7 @@
 ## 🚀 Features
 
 ### 📝 **Code Editor with Monaco**
+
 - Full-featured TypeScript/JavaScript editor with syntax highlighting
 - IntelliSense and auto-completion
 - Built-in strategy templates and examples
@@ -23,18 +27,21 @@
 - **Auto-clearing errors** when code changes or new backtests run
 
 ### 📊 **Real Market Data Integration**
+
 - Connect to Alpaca Markets API for live stock data
 - Support for both daily and minute-level data
 - Automatic timeframe selection based on date range
 - IEX data feed for reliable market information
 
 ### 🧮 **Advanced Backtesting Engine**
+
 - Execute custom trading strategies on historical data
 - Portfolio tracking with real-time value calculations
 - Buy & Hold comparison benchmarking
 - Detailed transaction history and metadata
 
 ### 📈 **Interactive Results Dashboard**
+
 - Performance metrics and summary cards
 - Color-coded portfolio value changes (green ↗️ / red ↘️)
 - Detailed transaction table with expandable metadata
@@ -42,6 +49,7 @@
 - CSV export functionality
 
 ### 💾 **Smart Persistence**
+
 - Auto-save API credentials, parameters, and strategy code
 - Version history for strategy iterations
 - Local storage with timestamp tracking
@@ -50,6 +58,7 @@
 ## 🛠️ Installation
 
 ### Prerequisites
+
 - Node.js 20.19.0+ or 22+ (required by Vite React plugin)
 - Yarn package manager
 - Alpaca Markets account (free tier available)
@@ -57,63 +66,70 @@
 ### Setup
 
 1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd stonks.js
-   ```
+
+    ```bash
+    git clone <repository-url>
+    cd stonks.js
+    ```
 
 2. **Install dependencies**
-   ```bash
-   yarn install
-   ```
+
+    ```bash
+    yarn install
+    ```
 
 3. **Start development server**
-   ```bash
-   yarn dev
-   ```
+
+    ```bash
+    yarn dev
+    ```
 
 4. **Get Alpaca API credentials**
-   - Sign up at [Alpaca Markets](https://alpaca.markets/)
-   - Generate paper trading API keys
-   - Enter credentials in the app's API Configuration section
+    - Sign up at [Alpaca Markets](https://alpaca.markets/)
+    - Generate paper trading API keys
+    - Enter credentials in the app's API Configuration section
 
 ## 🎯 Quick Start
 
 ### 1. Configure API Access
+
 - Open the API Configuration panel
 - Enter your Alpaca API Key and Secret
 - Credentials are automatically saved locally
 
 ### 2. Set Backtest Parameters
+
 - **Stock Symbol**: Enter any valid ticker (e.g., AAPL, MSFT, TSLA)
 - **Starting Amount**: Initial portfolio value (e.g., $10,000)
 - **Date Range**: Select start and end dates for backtesting
 - **Time Frame**: Automatically selected (1-minute for same-day, daily for longer periods)
 
 ### 3. Write Your Strategy
+
 ```javascript
 // Example: Simple buy and hold strategy
 if (data.dayNumber === 0) {
-  const sharesToBuy = Math.floor(1000 / data.nextBar.open);
-  result.changeInShares = sharesToBuy;
-  result.price = data.nextBar.open; // Optional - defaults to nextBar.open if not specified
-  
-  // Store purchase info in scratchpad for later reference
-  data.scratchpad.purchasePrice = data.nextBar.open;
-  data.scratchpad.purchaseDate = data.currentBar.timestamp;
+    const sharesToBuy = Math.floor(1000 / data.nextBar.open);
+    result.changeInShares = sharesToBuy;
+    result.price = data.nextBar.open; // Optional - defaults to nextBar.open if not specified
+
+    // Store purchase info in scratchpad for later reference
+    data.scratchpad.purchasePrice = data.nextBar.open;
+    data.scratchpad.purchaseDate = data.currentBar.timestamp;
 } else {
-  // Hold for the rest of the period
-  result.changeInShares = 0;
-  
-  // Track performance using scratchpad data
-  if (data.scratchpad.purchasePrice) {
-    const currentReturn = ((data.currentBar.close - data.scratchpad.purchasePrice) / data.scratchpad.purchasePrice) * 100;
-    result.meta = { returnPercent: currentReturn.toFixed(2) };
-  }
+    // Hold for the rest of the period
+    result.changeInShares = 0;
+
+    // Track performance using scratchpad data
+    if (data.scratchpad.purchasePrice) {
+        const currentReturn = ((data.currentBar.close - data.scratchpad.purchasePrice) / data.scratchpad.purchasePrice) * 100;
+        result.meta = { returnPercent: currentReturn.toFixed(2) };
+    }
 }
 ```
 
 ### 4. Run Backtest
+
 - Click "Run Backtest" to execute your strategy
 - View results in the interactive dashboard
 - Export data to CSV for further analysis
@@ -121,17 +137,19 @@ if (data.dayNumber === 0) {
 ## 📚 Strategy Development Guide
 
 ### Available Data Properties
+
 ```javascript
-data.dayNumber        // Current day (0-based)
-data.currentBar       // Current price bar
-data.previousBar      // Previous price bar  
-data.nextBar          // Next price bar (for reference)
-data.currentPortfolio // Portfolio state (shares, cash, value)
-data.history         // Array of previous strategy results and portfolio snapshots
-data.scratchpad      // Persistent object for storing custom data across trading days
+data.dayNumber; // Current day (0-based)
+data.currentBar; // Current price bar
+data.previousBar; // Previous price bar
+data.nextBar; // Next price bar (for reference)
+data.currentPortfolio; // Portfolio state (shares, cash, value)
+data.history; // Array of previous strategy results and portfolio snapshots
+data.scratchpad; // Persistent object for storing custom data across trading days
 ```
 
 ### Bar Object Structure
+
 ```javascript
 {
   timestamp: "2024-01-15T09:30:00Z",
@@ -144,21 +162,23 @@ data.scratchpad      // Persistent object for storing custom data across trading
 ```
 
 ### Strategy Result Object
+
 ```javascript
 // Modify the result object (don't return values)
-result.changeInShares = 10;         // Buy 10 shares (negative to sell)
-result.price = data.nextBar.open;   // Execution price (optional, defaults to nextBar.open)
+result.changeInShares = 10; // Buy 10 shares (negative to sell)
+result.price = data.nextBar.open; // Execution price (optional, defaults to nextBar.open)
 result.meta = { reason: "RSI signal" }; // Custom metadata (optional)
 ```
 
 ### Scratchpad Object
+
 The `data.scratchpad` object provides persistent storage for custom data across trading days. It's perfect for maintaining state, calculating indicators, or storing historical values that your strategy needs to reference.
 
 ```javascript
 // Store any type of data
-data.scratchpad.myValue = 42;                    // Numbers
-data.scratchpad.myArray = [];                    // Arrays
-data.scratchpad.myObject = { key: "value" };     // Objects
+data.scratchpad.myValue = 42; // Numbers
+data.scratchpad.myArray = []; // Arrays
+data.scratchpad.myObject = { key: "value" }; // Objects
 
 // Retrieve with fallback values
 const stored = data.scratchpad.myValue || 0;
@@ -169,14 +189,15 @@ data.scratchpad.prices.push(data.currentBar.close);
 
 // Maintain rolling windows
 if (data.scratchpad.prices.length > 20) {
-  data.scratchpad.prices.shift(); // Keep only last 20 prices
+    data.scratchpad.prices.shift(); // Keep only last 20 prices
 }
 
 // Calculate indicators using stored data
-const avg = data.scratchpad.prices.reduce((a,b) => a+b) / data.scratchpad.prices.length;
+const avg = data.scratchpad.prices.reduce((a, b) => a + b) / data.scratchpad.prices.length;
 ```
 
 **Key Features:**
+
 - **Persistent**: Data survives across all trading days in a backtest
 - **Flexible**: Store numbers, arrays, objects, or any JavaScript data type
 - **Automatic**: No need to initialize - the object is always available
@@ -185,6 +206,7 @@ const avg = data.scratchpad.prices.reduce((a,b) => a+b) / data.scratchpad.prices
 ### Example Strategies
 
 #### Moving Average Crossover
+
 ```javascript
 // Initialize price arrays in scratchpad
 data.scratchpad.prices = data.scratchpad.prices || [];
@@ -192,31 +214,32 @@ data.scratchpad.prices.push(data.currentBar.close);
 
 // Maintain rolling windows efficiently
 if (data.scratchpad.prices.length > 50) {
-  data.scratchpad.prices.shift(); // Keep only last 50 prices
+    data.scratchpad.prices.shift(); // Keep only last 50 prices
 }
 
 // Calculate moving averages once we have enough data
 if (data.scratchpad.prices.length >= 50) {
-  const prices = data.scratchpad.prices;
-  const sma20 = prices.slice(-20).reduce((sum, price) => sum + price, 0) / 20;
-  const sma50 = prices.reduce((sum, price) => sum + price, 0) / prices.length;
+    const prices = data.scratchpad.prices;
+    const sma20 = prices.slice(-20).reduce((sum, price) => sum + price, 0) / 20;
+    const sma50 = prices.reduce((sum, price) => sum + price, 0) / prices.length;
 
-  if (sma20 > sma50 && data.currentPortfolio.sharesOwned === 0) {
-    // Buy signal - golden cross
-    const sharesToBuy = Math.floor(data.currentPortfolio.availableCash / data.nextBar.open);
-    result.changeInShares = sharesToBuy;
-    result.price = data.nextBar.open;
-    result.meta = { signal: "buy", sma20, sma50, crossover: "golden" };
-  } else if (sma20 < sma50 && data.currentPortfolio.sharesOwned > 0) {
-    // Sell signal - death cross
-    result.changeInShares = -data.currentPortfolio.sharesOwned;
-    result.price = data.nextBar.open;
-    result.meta = { signal: "sell", sma20, sma50, crossover: "death" };
-  }
+    if (sma20 > sma50 && data.currentPortfolio.sharesOwned === 0) {
+        // Buy signal - golden cross
+        const sharesToBuy = Math.floor(data.currentPortfolio.availableCash / data.nextBar.open);
+        result.changeInShares = sharesToBuy;
+        result.price = data.nextBar.open;
+        result.meta = { signal: "buy", sma20, sma50, crossover: "golden" };
+    } else if (sma20 < sma50 && data.currentPortfolio.sharesOwned > 0) {
+        // Sell signal - death cross
+        result.changeInShares = -data.currentPortfolio.sharesOwned;
+        result.price = data.nextBar.open;
+        result.meta = { signal: "sell", sma20, sma50, crossover: "death" };
+    }
 }
 ```
 
 #### RSI Strategy
+
 ```javascript
 // Initialize scratchpad arrays for RSI calculation
 data.scratchpad.prices = data.scratchpad.prices || [];
@@ -227,38 +250,38 @@ data.scratchpad.losses = data.scratchpad.losses || [];
 data.scratchpad.prices.push(data.currentBar.close);
 
 if (data.scratchpad.prices.length > 1) {
-  const change = data.currentBar.close - data.scratchpad.prices[data.scratchpad.prices.length - 2];
-  data.scratchpad.gains.push(change > 0 ? change : 0);
-  data.scratchpad.losses.push(change < 0 ? Math.abs(change) : 0);
+    const change = data.currentBar.close - data.scratchpad.prices[data.scratchpad.prices.length - 2];
+    data.scratchpad.gains.push(change > 0 ? change : 0);
+    data.scratchpad.losses.push(change < 0 ? Math.abs(change) : 0);
 }
 
 // Maintain 14-period rolling windows
 if (data.scratchpad.gains.length > 14) {
-  data.scratchpad.gains.shift();
-  data.scratchpad.losses.shift();
+    data.scratchpad.gains.shift();
+    data.scratchpad.losses.shift();
 }
 if (data.scratchpad.prices.length > 15) {
-  data.scratchpad.prices.shift();
+    data.scratchpad.prices.shift();
 }
 
 // Calculate RSI once we have enough data
 if (data.scratchpad.gains.length >= 14) {
-  const avgGain = data.scratchpad.gains.reduce((sum, gain) => sum + gain, 0) / 14;
-  const avgLoss = data.scratchpad.losses.reduce((sum, loss) => sum + loss, 0) / 14;
-  const rsi = avgLoss === 0 ? 100 : 100 - (100 / (1 + (avgGain / avgLoss)));
-  
-  if (rsi < 30 && data.currentPortfolio.sharesOwned === 0) {
-    // Oversold - buy signal
-    const sharesToBuy = Math.floor(data.currentPortfolio.availableCash / data.nextBar.open);
-    result.changeInShares = sharesToBuy;
-    result.price = data.nextBar.open;
-    result.meta = { rsi: rsi.toFixed(2), signal: "oversold", avgGain, avgLoss };
-  } else if (rsi > 70 && data.currentPortfolio.sharesOwned > 0) {
-    // Overbought - sell signal
-    result.changeInShares = -data.currentPortfolio.sharesOwned;
-    result.price = data.nextBar.open;
-    result.meta = { rsi: rsi.toFixed(2), signal: "overbought", avgGain, avgLoss };
-  }
+    const avgGain = data.scratchpad.gains.reduce((sum, gain) => sum + gain, 0) / 14;
+    const avgLoss = data.scratchpad.losses.reduce((sum, loss) => sum + loss, 0) / 14;
+    const rsi = avgLoss === 0 ? 100 : 100 - 100 / (1 + avgGain / avgLoss);
+
+    if (rsi < 30 && data.currentPortfolio.sharesOwned === 0) {
+        // Oversold - buy signal
+        const sharesToBuy = Math.floor(data.currentPortfolio.availableCash / data.nextBar.open);
+        result.changeInShares = sharesToBuy;
+        result.price = data.nextBar.open;
+        result.meta = { rsi: rsi.toFixed(2), signal: "oversold", avgGain, avgLoss };
+    } else if (rsi > 70 && data.currentPortfolio.sharesOwned > 0) {
+        // Overbought - sell signal
+        result.changeInShares = -data.currentPortfolio.sharesOwned;
+        result.price = data.nextBar.open;
+        result.meta = { rsi: rsi.toFixed(2), signal: "overbought", avgGain, avgLoss };
+    }
 }
 ```
 
@@ -267,23 +290,27 @@ if (data.scratchpad.gains.length >= 14) {
 The platform includes sophisticated error handling to help debug strategy code:
 
 ### **Real-time Error Detection**
+
 - **Syntax errors**: Caught during code compilation with exact line numbers
 - **Runtime errors**: Captured during strategy execution with stack trace analysis
 - **Type validation**: Monaco editor provides real-time TypeScript validation
 
 ### **Visual Error Indicators**
+
 - **Line highlighting**: Red wavy underlines at error locations in Monaco editor
 - **Margin indicators**: Red dots in editor gutter for quick error spotting
 - **Hover tooltips**: Detailed error messages on hover
 - **Auto-scroll**: Automatic navigation to error line when errors occur
 
 ### **Detailed Error Information**
+
 - **Precise line numbers**: Accurate mapping from compiled code to source code
 - **Code context**: 5-line context window showing surrounding code
 - **Error categorization**: Syntax, runtime, or unknown error types
 - **Column positions**: Exact character position where errors occur
 
 ### **Smart Error Clearing**
+
 - **Auto-clear on edit**: Error highlights disappear when you start typing
 - **Backtest reset**: Errors clear when running new backtests
 - **Parameter changes**: Previous errors clear when modifying backtest settings
@@ -291,6 +318,7 @@ The platform includes sophisticated error handling to help debug strategy code:
 ## 🏗️ Technical Architecture
 
 ### Frontend Stack
+
 - **React 19** with TypeScript for type safety
 - **Vite** for fast development and building
 - **TailwindCSS** for modern, responsive styling
@@ -298,6 +326,7 @@ The platform includes sophisticated error handling to help debug strategy code:
 - **Luxon** for date/time handling
 
 ### Key Components
+
 - `CodeEditor` - Monaco-based strategy editor with TypeScript support and error highlighting
 - `BacktestParameters` - Form for configuring backtest settings
 - `ResultsDisplay` - Interactive results dashboard with enhanced error display
@@ -305,6 +334,7 @@ The platform includes sophisticated error handling to help debug strategy code:
 - `TypeExtractor` - Dynamic type definition system that syncs TypeScript types with Monaco editor
 
 ### Data Flow
+
 1. User writes strategy in Monaco editor with real-time TypeScript validation
 2. Code is validated, enhanced with error tracking, and transpiled to executable JavaScript
 3. Selected data provider fetches historical market data
@@ -321,46 +351,43 @@ All data providers must extend the `StockDataProviderBase` abstract class:
 
 ```typescript
 export abstract class StockDataProviderBase {
-  static readonly name: string = "ProviderName";
-  
-  // Fetch historical market data
-  abstract getBars(
-    props: BacktestMarketDataProps, 
-    abortSignal?: AbortSignal
-  ): Promise<Bar[]>;
-  
-  // Render provider-specific configuration UI
-  abstract renderSettings(
-    initialSettings: Record<string, any>, 
-    onSettingsChange: (settings: Record<string, any>) => void
-  ): React.ReactNode;
-  
-  // Validate provider configuration
-  abstract get isConfigured(): { isValid: boolean, error?: string };
+    static readonly name: string = "ProviderName";
+
+    // Fetch historical market data
+    abstract getBars(props: BacktestMarketDataProps, abortSignal?: AbortSignal): Promise<Bar[]>;
+
+    // Render provider-specific configuration UI
+    abstract renderSettings(initialSettings: Record<string, any>, onSettingsChange: (settings: Record<string, any>) => void): React.ReactNode;
+
+    // Validate provider configuration
+    abstract get isConfigured(): { isValid: boolean; error?: string };
 }
 ```
 
 ### 🔧 Required Implementation
 
 #### **1. Data Fetching (`getBars`)**
+
 - **Input**: `BacktestMarketDataProps` containing symbol, date range, and bar resolution
 - **Output**: Array of `Bar` objects with OHLCV data
-- **Features**: 
-  - Support for abort signals (cancellation)
-  - Handle pagination for large datasets
-  - Convert data to standardized `Bar` format
-  - Proper error handling and user-friendly messages
+- **Features**:
+    - Support for abort signals (cancellation)
+    - Handle pagination for large datasets
+    - Convert data to standardized `Bar` format
+    - Proper error handling and user-friendly messages
 
 #### **2. Settings UI (`renderSettings`)**
+
 - **Purpose**: Render provider-specific configuration (API keys, endpoints, etc.)
 - **Input**: Initial settings and change callback
 - **Output**: React component for configuration
 - **Features**:
-  - Real-time validation feedback
-  - Secure credential handling
-  - Auto-save functionality via callback
+    - Real-time validation feedback
+    - Secure credential handling
+    - Auto-save functionality via callback
 
 #### **3. Configuration Validation (`isConfigured`)**
+
 - **Purpose**: Check if provider is ready to fetch data
 - **Output**: Validation result with optional error message
 - **Usage**: Enables/disables backtest functionality
@@ -368,25 +395,27 @@ export abstract class StockDataProviderBase {
 ### 📊 Data Format Standards
 
 #### **Bar Object Structure**
+
 ```typescript
 interface Bar {
-  timestamp: string;    // ISO 8601 format
-  open: number;        // Opening price
-  high: number;        // Highest price
-  low: number;         // Lowest price  
-  close: number;       // Closing price
-  volume: number;      // Trading volume
+    timestamp: string; // ISO 8601 format
+    open: number; // Opening price
+    high: number; // Highest price
+    low: number; // Lowest price
+    close: number; // Closing price
+    volume: number; // Trading volume
 }
 ```
 
 #### **Market Data Request**
+
 ```typescript
 interface BacktestMarketDataProps {
-  symbol: string;              // Stock ticker (e.g., "AAPL")
-  startDate: string;           // ISO date string
-  endDate?: string;            // Optional end date
-  barResolutionValue: string;  // Resolution value (e.g., "1", "5")
-  barResolutionPeriod: string; // Period type ("minute", "hour", "day", "week", "month")
+    symbol: string; // Stock ticker (e.g., "AAPL")
+    startDate: string; // ISO date string
+    endDate?: string; // Optional end date
+    barResolutionValue: string; // Resolution value (e.g., "1", "5")
+    barResolutionPeriod: string; // Period type ("minute", "hour", "day", "week", "month")
 }
 ```
 
@@ -406,13 +435,13 @@ export class YourDataProvider extends StockDataProviderBase {
 
   async getBars(props: BacktestMarketDataProps, abortSignal?: AbortSignal): Promise<Bar[]> {
     const { symbol, startDate, endDate, barResolutionValue, barResolutionPeriod } = props;
-    
+
     // Convert resolution to your API's format
     const timeframe = this.convertTimeframe(barResolutionValue, barResolutionPeriod);
-    
+
     // Build API request
     const url = `https://your-api.com/v1/bars/${symbol}?timeframe=${timeframe}&start=${startDate}`;
-    
+
     const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${this.settings?.apiKey}`,
@@ -426,7 +455,7 @@ export class YourDataProvider extends StockDataProviderBase {
     }
 
     const data = await response.json();
-    
+
     // Convert to standard Bar format
     return data.bars.map((bar: any) => ({
       timestamp: bar.timestamp,
@@ -490,8 +519,8 @@ import { AlpacaDataProvider } from "./AlpacaDataProvider";
 import { YourDataProvider } from "./YourDataProvider";
 
 export const AvailableProviders = [
-  AlpacaDataProvider,
-  YourDataProvider  // Add your provider here
+    AlpacaDataProvider,
+    YourDataProvider // Add your provider here
 ] as const;
 ```
 
@@ -505,6 +534,7 @@ export const AvailableProviders = [
 ### 🔍 Built-in Providers
 
 #### **Alpaca Markets Provider**
+
 - **Features**: Real-time and historical stock data via IEX feed
 - **Requirements**: Free Alpaca account with paper trading API keys
 - **Supported Resolutions**: 1min to 1month bars
@@ -514,48 +544,50 @@ export const AvailableProviders = [
 ### 💡 Provider Development Tips
 
 #### **Error Handling Best Practices**
+
 ```typescript
 // Provide user-friendly error messages
 if (response.status === 401) {
-  throw new Error('Invalid API credentials. Please check your API key.');
+    throw new Error("Invalid API credentials. Please check your API key.");
 }
 if (response.status === 429) {
-  throw new Error('Rate limit exceeded. Please wait before trying again.');
+    throw new Error("Rate limit exceeded. Please wait before trying again.");
 }
 if (response.status === 404) {
-  throw new Error(`Symbol '${symbol}' not found. Please verify the ticker symbol.`);
+    throw new Error(`Symbol '${symbol}' not found. Please verify the ticker symbol.`);
 }
 ```
 
 #### **Pagination Support**
+
 ```typescript
 // Handle large datasets with pagination
 async getBars(props: BacktestMarketDataProps, abortSignal?: AbortSignal): Promise<Bar[]> {
   let allBars: Bar[] = [];
   let nextPageToken: string | undefined;
-  
+
   do {
     const response = await this.fetchPage(props, nextPageToken, abortSignal);
     allBars.push(...response.bars);
     nextPageToken = response.nextPageToken;
   } while (nextPageToken);
-  
+
   return allBars;
 }
 ```
 
 #### **Timezone Handling**
+
 ```typescript
 // Ensure consistent timezone handling
 import { DateTime } from "luxon";
 
 // Convert to market timezone (e.g., Eastern for US markets)
-const marketTime = DateTime.fromISO(bar.timestamp)
-  .setZone('America/New_York')
-  .toISO();
+const marketTime = DateTime.fromISO(bar.timestamp).setZone("America/New_York").toISO();
 ```
 
 #### **Caching Considerations**
+
 ```typescript
 // Consider implementing caching for frequently requested data
 private cache = new Map<string, { data: Bar[], timestamp: number }>();
@@ -568,12 +600,15 @@ private getCacheKey(props: BacktestMarketDataProps): string {
 ### 🚀 Advanced Features
 
 #### **Custom Timeframe Support**
+
 Some providers may support custom timeframes not available in the standard resolution options. You can extend the UI by modifying the `BacktestParameters` component to include provider-specific options.
 
 #### **Real-time Data Integration**
+
 While the current architecture focuses on historical backtesting, providers can be extended to support real-time data feeds for live strategy monitoring.
 
 #### **Multiple Asset Classes**
+
 The `Bar` interface can be extended to support additional asset classes (forex, crypto, commodities) by adding provider-specific metadata fields.
 
 ## 🔒 Security & Privacy
