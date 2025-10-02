@@ -9,13 +9,24 @@ export class AlpacaDataProvider extends StockDataProviderBase {
 
     static readonly name: string = "Alpaca";
 
+    private isCrypto(symbol: string): boolean {
+        return symbol.includes("/");
+    }
+
     private async getAlpacaBars(props: BacktestMarketDataProps, pageToken?: string, abortSignal?: AbortSignal): Promise<Bar[]> {
         const { symbol, startDate, endDate, barResolutionValue, barResolutionPeriod } = props;
 
         // Convert bar resolution to Alpaca timeframe format
         const timeframe = this.getAlpacaTimeframe(barResolutionValue, barResolutionPeriod);
+        const isCrypto = this.isCrypto(symbol);
 
-        let url = `https://data.alpaca.markets/v2/stocks/${symbol}/bars?timeframe=${timeframe}&limit=1000&feed=iex&sort=asc&start=${startDate}&adjustment=split`;
+        let url = isCrypto ? `https://data.alpaca.markets/v1beta3/crypto/us/bars` : `https://data.alpaca.markets/v2/stocks/bars`;
+
+        url += `?symbols=${symbol}&timeframe=${timeframe}&limit=1000&sort=asc&start=${startDate}`;
+
+        if (!isCrypto) {
+            url += `&adjustment=split&feed=iex`;
+        }
 
         if (endDate) {
             const end = DateTime.fromISO(endDate, { zone: "America/New_York" }).endOf("day").toUTC().toISO();
@@ -44,11 +55,11 @@ export class AlpacaDataProvider extends StockDataProviderBase {
 
         const data = await response.json();
 
-        if (!data.bars) {
+        if (!data.bars[symbol]) {
             return [];
         }
 
-        const currentBars = data.bars.map((bar: any) => ({
+        const currentBars = data.bars[symbol].map((bar: any) => ({
             timestamp: DateTime.fromISO(bar.t).setZone("America/New_York").toISO(),
             open: Number(bar.o),
             high: Number(bar.h),

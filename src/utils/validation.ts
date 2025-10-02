@@ -8,13 +8,14 @@ export const validateParameters = (settings: BacktestSettings) => {
     }
 
     if (!stockSymbol) {
-        return { isValid: false, error: "Stock symbol is required" };
+        return { isValid: false, error: "Symbol is required" };
     }
 
-    // Validate stock symbol format (basic validation)
-    const symbolPattern = /^[A-Z]{1,5}$/;
+    // Validate stock/crypto symbol format (basic validation)
+    // Supports traditional stock symbols (AAPL, TSLA) and crypto pairs (ETH/USD, BTC/USDT)
+    const symbolPattern = /^[A-Z]{1,10}(\/[A-Z]{3,10})?$/;
     if (!symbolPattern.test(stockSymbol.toUpperCase())) {
-        return { isValid: false, error: "Stock symbol must be 1-5 letters (e.g., AAPL, TSLA)" };
+        return { isValid: false, error: "Symbol must be 1-10 letters (e.g., AAPL, TSLA) or a crypto pair (e.g., ETH/USD, BTC/USDT)" };
     }
 
     if (!startingAmount || parseFloat(startingAmount) <= 0) {

@@ -42,7 +42,7 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({ settings
                 {/* Stock Symbol */}
                 <div>
                     <label htmlFor="stockSymbol" className="block text-sm font-medium mb-2">
-                        Stock Symbol <span className="text-pink-500">*</span>
+                        Symbol <span className="text-pink-500">*</span>
                     </label>
                     <input
                         type="text"
@@ -50,9 +50,9 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({ settings
                         value={stockSymbol}
                         onChange={e => handleChange("stockSymbol", e.target.value.toUpperCase())}
                         className="w-full px-3 py-2 border border-tuna-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                        placeholder="e.g., AAPL"
-                        maxLength={5}
-                        pattern="[A-Z]{1,5}"
+                        placeholder="e.g., AAPL, ETH/USD"
+                        maxLength={21}
+                        pattern="[A-Z]{1,10}(\/[A-Z]{3,10})?"
                         required
                     />
                 </div>

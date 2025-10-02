@@ -99,7 +99,7 @@
 
 ### 2. Set Backtest Parameters
 
-- **Stock Symbol**: Enter any valid ticker (e.g., AAPL, MSFT, TSLA)
+- **Symbol**: Enter any valid ticker (e.g., AAPL, MSFT, TSLA) or crypto pair (e.g., ETH/USD, BTC/USDT)
 - **Starting Amount**: Initial portfolio value (e.g., $10,000)
 - **Date Range**: Select start and end dates for backtesting
 - **Time Frame**: Automatically selected (1-minute for same-day, daily for longer periods)
