@@ -10,7 +10,7 @@ interface BacktestParametersProps {
     parameterError?: string | null;
 }
 
-export const BacktestParameters: React.FC<BacktestParametersProps> = ({ settings, onSettingsChange, onClearMessages, parameterError }) => {
+export const BacktestParameters: React.FC<BacktestParametersProps> = React.memo(({ settings, onSettingsChange, onClearMessages, parameterError }) => {
     const { stockSymbol, startingAmount, startDate, endDate, barResolutionValue, barResolutionPeriod } = settings;
     const isReady = stockSymbol && startDate && startingAmount && parseFloat(startingAmount) > 0;
 
@@ -164,4 +164,6 @@ export const BacktestParameters: React.FC<BacktestParametersProps> = ({ settings
             </ul>
         </div>
     );
-};
+});
+
+BacktestParameters.displayName = "BacktestParameters";

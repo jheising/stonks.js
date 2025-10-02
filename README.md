@@ -3,7 +3,7 @@
   
   # 📈 stonks.js
   
-  A modern, web-based backtesting platform for stock trading strategies. Build, test, and analyze your trading algorithms with real market data from Alpaca Markets.
+  A modern, web-based backtesting platform for stock and crypto trading strategies. Build, test, and analyze your trading algorithms with real market data from Alpaca Markets.
 
 ### 🌐 [Try the Live Demo →](https://jheising.github.io/stonks.js)
 
@@ -28,7 +28,8 @@
 
 ### 📊 **Real Market Data Integration**
 
-- Connect to Alpaca Markets API for live stock data
+- Connect to Alpaca Markets API for live stock and crypto data
+- Support for US equities and cryptocurrency pairs (BTC/USD, ETH/USD, etc.)
 - Support for both daily and minute-level data
 - Automatic timeframe selection based on date range
 - IEX data feed for reliable market information
@@ -535,11 +536,14 @@ export const AvailableProviders = [
 
 #### **Alpaca Markets Provider**
 
-- **Features**: Real-time and historical stock data via IEX feed
+- **Features**: Real-time and historical stock and crypto data
+- **Asset Classes**:
+    - US equities via IEX feed
+    - Cryptocurrency pairs (BTC/USD, ETH/USD, DOGE/USD, and more)
 - **Requirements**: Free Alpaca account with paper trading API keys
 - **Supported Resolutions**: 1min to 1month bars
 - **Rate Limits**: 200 requests/minute for free accounts
-- **Data Coverage**: US equities, extensive historical data
+- **Data Coverage**: Extensive historical data for both stocks and crypto
 
 ### 💡 Provider Development Tips
 

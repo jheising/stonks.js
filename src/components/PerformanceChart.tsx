@@ -18,7 +18,7 @@ interface SeriesToggle {
     tradeMarkers: boolean;
 }
 
-export const PerformanceChart: React.FC<PerformanceChartProps> = ({ backtestResult }) => {
+export const PerformanceChart: React.FC<PerformanceChartProps> = React.memo(({ backtestResult }) => {
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<IChartApi | null>(null);
     const candlestickSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
@@ -394,4 +394,6 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ backtestResu
             <div ref={chartContainerRef} className="w-full rounded-lg overflow-hidden border border-tuna-600" />
         </div>
     );
-};
+});
+
+PerformanceChart.displayName = "PerformanceChart";

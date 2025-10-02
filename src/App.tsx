@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useCallback } from "react";
 import { backtest } from "./utils/backtester";
 import { parseStrategyError, type ParsedError } from "./utils/errorParser";
 import { createUserCodeWrapper, validateCode } from "./utils/codeCompiler";
@@ -32,16 +32,19 @@ function App() {
     const [dataProviderSettings, setDataProviderSettings] = useLocalStorage(`${STORAGE_KEYS.DATA_PROVIDER_SETTINGS}:${dataProvider.current.constructor.name}`, {});
 
     // Handle provider switching
-    const handleProviderChange = (newIndex: number) => {
-        if (newIndex !== selectedProviderIndex && newIndex < AvailableProviders.length) {
-            setSelectedProviderIndex(newIndex);
-            // Create new provider instance
-            dataProvider.current = new AvailableProviders[newIndex]();
-            // Load settings for the new provider
-            const newProviderSettings = localStorage.getItem(`${STORAGE_KEYS.DATA_PROVIDER_SETTINGS}:${dataProvider.current.constructor.name}`);
-            setDataProviderSettings(newProviderSettings ? JSON.parse(newProviderSettings) : {});
-        }
-    };
+    const handleProviderChange = useCallback(
+        (newIndex: number) => {
+            if (newIndex !== selectedProviderIndex && newIndex < AvailableProviders.length) {
+                setSelectedProviderIndex(newIndex);
+                // Create new provider instance
+                dataProvider.current = new AvailableProviders[newIndex]();
+                // Load settings for the new provider
+                const newProviderSettings = localStorage.getItem(`${STORAGE_KEYS.DATA_PROVIDER_SETTINGS}:${dataProvider.current.constructor.name}`);
+                setDataProviderSettings(newProviderSettings ? JSON.parse(newProviderSettings) : {});
+            }
+        },
+        [selectedProviderIndex, setSelectedProviderIndex, setDataProviderSettings]
+    );
 
     // Backtest settings - consolidated object approach
     const [backtestSettings, setBacktestSettings] = useLocalStorage<BacktestSettings>(STORAGE_KEYS.BACKTEST_SETTINGS, {
@@ -54,9 +57,12 @@ function App() {
     });
 
     // Helper function to update backtest settings
-    const updateBacktestSettings = (updates: Partial<BacktestSettings>) => {
-        setBacktestSettings(prev => ({ ...prev, ...updates }));
-    };
+    const updateBacktestSettings = useCallback(
+        (updates: Partial<BacktestSettings>) => {
+            setBacktestSettings(prev => ({ ...prev, ...updates }));
+        },
+        [setBacktestSettings]
+    );
 
     // Loading and error states
     const [isRunning, setIsRunning] = useState(false);
@@ -77,36 +83,53 @@ function App() {
     const [isCodeEditorMaximized, setIsCodeEditorMaximized] = useState(false);
 
     // Clear messages when form inputs change (but keep results visible)
-    const clearMessages = () => {
+    const clearMessages = useCallback(() => {
         if (backtestError || backtestSuccess || parsedError) {
             setBacktestError(null);
             setParsedError(null);
             setBacktestSuccess(null);
             // Note: We intentionally keep backtestResult so the table stays visible
         }
-    };
+    }, [backtestError, backtestSuccess, parsedError]);
 
     // Load a specific code version
-    const loadCodeVersion = (version: CodeVersion) => {
-        setCode(version.code);
-        setShowVersionModal(false);
-    };
+    const loadCodeVersion = useCallback(
+        (version: CodeVersion) => {
+            setCode(version.code);
+            setShowVersionModal(false);
+        },
+        [setCode]
+    );
 
     // Toggle code editor maximize state
-    const toggleCodeEditorMaximize = () => {
+    const toggleCodeEditorMaximize = useCallback(() => {
         setIsCodeEditorMaximized(!isCodeEditorMaximized);
-    };
+    }, [isCodeEditorMaximized]);
 
-    const handleEditorChange = (value: string | undefined) => {
-        setCode(value || "");
-        clearMessages();
-    };
+    const handleEditorChange = useCallback(
+        (value: string | undefined) => {
+            setCode(value || "");
+            clearMessages();
+        },
+        [setCode, clearMessages]
+    );
 
     // Handle Monaco validation changes
-    const handleValidationChange = (hasErrors: boolean, firstError?: { line: number; column: number; message: string }) => {
+    const handleValidationChange = useCallback((hasErrors: boolean, firstError?: { line: number; column: number; message: string }) => {
         setHasMonacoErrors(hasErrors);
         setMonacoError(firstError || null);
-    };
+    }, []);
+
+    // Handle clearing errors from ResultsDisplay
+    const handleClearError = useCallback(() => {
+        setBacktestError(null);
+        setParsedError(null);
+    }, []);
+
+    // Handle closing version modal
+    const handleCloseVersionModal = useCallback(() => {
+        setShowVersionModal(false);
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -297,17 +320,14 @@ function App() {
                                 backtestError={backtestError}
                                 parsedError={parsedError}
                                 stockSymbol={backtestResult?.symbol ?? backtestSettings.stockSymbol}
-                                onClearError={() => {
-                                    setBacktestError(null);
-                                    setParsedError(null);
-                                }}
+                                onClearError={handleClearError}
                             />
                         </CollapseableBox>
                     )}
                 </div>
 
                 {/* Version Modal */}
-                <VersionModal show={showVersionModal} onClose={() => setShowVersionModal(false)} onLoadVersion={loadCodeVersion} />
+                <VersionModal show={showVersionModal} onClose={handleCloseVersionModal} onLoadVersion={loadCodeVersion} />
 
                 {/* Attribution Footer */}
                 <div className="mt-12 text-center">

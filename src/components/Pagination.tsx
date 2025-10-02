@@ -9,7 +9,7 @@ interface PaginationProps {
     pageSizeOptions?: number[];
 }
 
-export const Pagination: React.FC<PaginationProps> = ({ currentPage, totalItems, pageSize, onPageChange, onPageSizeChange, pageSizeOptions = [25, 50, 100, 250] }) => {
+export const Pagination: React.FC<PaginationProps> = React.memo(({ currentPage, totalItems, pageSize, onPageChange, onPageSizeChange, pageSizeOptions = [25, 50, 100, 250] }) => {
     const totalPages = Math.ceil(totalItems / pageSize);
     const startItem = (currentPage - 1) * pageSize + 1;
     const endItem = Math.min(currentPage * pageSize, totalItems);
@@ -128,4 +128,6 @@ export const Pagination: React.FC<PaginationProps> = ({ currentPage, totalItems,
             </div>
         </div>
     );
-};
+});
+
+Pagination.displayName = "Pagination";

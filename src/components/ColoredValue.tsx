@@ -13,7 +13,7 @@ interface ColoredValueProps {
     className?: string;
 }
 
-export const ColoredValue: React.FC<ColoredValueProps> = ({ rule, format, className = "" }) => {
+export const ColoredValue: React.FC<ColoredValueProps> = React.memo(({ rule, format, className = "" }) => {
     const getColor = (): string => {
         switch (rule.type) {
             case "positive-negative":
@@ -57,4 +57,6 @@ export const ColoredValue: React.FC<ColoredValueProps> = ({ rule, format, classN
     const colorClass = getColor();
 
     return <span className={`${colorClass} ${className}`}>{formattedValue}</span>;
-};
+});
+
+ColoredValue.displayName = "ColoredValue";
